@@ -7,14 +7,14 @@ interface GroupLinkListProps {
 }
 
 export const GroupLinkList: React.FC<GroupLinkListProps> = ({ hideAddButton }) => {
-  const [groupLinks, setGroupLinks] = useState<GroupLink[]>([]);
+  const [groupLinks, setGroupLinks] = useState<{ codccusto: string; idgrupobitrix: number }[]>([]);
   const [costCenters, setCostCenters] = useState<CostCenter[]>([]);
   const [bitrixGroups, setBitrixGroups] = useState<BitrixGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [editingLink, setEditingLink] = useState<GroupLink | null>(null);
-  const [formData, setFormData] = useState({ codccusto: '', id_grupo: '' });
+  const [formData, setFormData] = useState({ codccusto: '', idtask: '' });
   const [success, setSuccess] = useState<string | null>(null);
 
   // Carregar dados
@@ -53,7 +53,7 @@ export const GroupLinkList: React.FC<GroupLinkListProps> = ({ hideAddButton }) =
     try {
       const payload = {
         codccusto: formData.codccusto,
-        id_grupo: formData.id_grupo ? parseInt(formData.id_grupo) : null
+        idgrupobitrix: formData.idtask ? parseInt(formData.idtask) : null
       };
       const url = editingLink
         ? `http://localhost:3000/api/bgcatividade/${editingLink.codccusto}`
@@ -67,7 +67,7 @@ export const GroupLinkList: React.FC<GroupLinkListProps> = ({ hideAddButton }) =
       if (!response.ok) throw new Error('Erro ao salvar');
       setShowModal(false);
       setEditingLink(null);
-      setFormData({ codccusto: '', id_grupo: '' });
+      setFormData({ codccusto: '', idtask: '' });
       setSuccess(editingLink ? 'Vínculo editado com sucesso!' : 'Vínculo criado com sucesso!');
       setTimeout(() => setSuccess(null), 3000);
       // Atualiza lista
@@ -82,11 +82,11 @@ export const GroupLinkList: React.FC<GroupLinkListProps> = ({ hideAddButton }) =
   const handleDelete = async (codccusto: string) => {
     if (!window.confirm('Tem certeza que deseja excluir este vínculo?')) return;
     try {
-      const response = await fetch(`http://localhost:3000/api/bgcatividade/${codccusto}`, { method: 'DELETE' });
+      const response = await fetch(`http://localhost:3000/api/batividadeg/${codccusto}`, { method: 'DELETE' });
       if (!response.ok) throw new Error('Erro ao excluir');
       setSuccess('Vínculo excluído com sucesso!');
       setTimeout(() => setSuccess(null), 3000);
-      setGroupLinks(await fetch('http://localhost:3000/api/bgcatividade').then(r => r.json()));
+      setGroupLinks(await fetch('http://localhost:3000/api/batividadeg').then(r => r.json()));
     } catch (err: any) {
       setError('Erro ao excluir: ' + (err.message || err.toString()));
     }
@@ -95,7 +95,7 @@ export const GroupLinkList: React.FC<GroupLinkListProps> = ({ hideAddButton }) =
   // Editar vínculo
   const startEdit = (link: GroupLink) => {
     setEditingLink(link);
-    setFormData({ codccusto: link.codccusto, id_grupo: link.id_grupo?.toString() });
+    setFormData({ codccusto: link.codccusto, idtask: link.idtask?.toString() });
     setShowModal(true);
   };
 
@@ -103,7 +103,7 @@ export const GroupLinkList: React.FC<GroupLinkListProps> = ({ hideAddButton }) =
   const resetForm = () => {
     setShowModal(false);
     setEditingLink(null);
-    setFormData({ codccusto: '', id_grupo: '' });
+    setFormData({ codccusto: '', idtask: '' });
   };
 
   if (loading) {
@@ -142,7 +142,7 @@ export const GroupLinkList: React.FC<GroupLinkListProps> = ({ hideAddButton }) =
               </div>
               <div>
                 <label className="block text-sm font-medium mb-2">Grupo Bitrix</label>
-                <select value={formData.id_grupo} onChange={e => setFormData({ ...formData, id_grupo: e.target.value })} className="w-full px-3 py-2 border rounded-lg">
+                <select value={formData.idtask} onChange={e => setFormData({ ...formData, idtask: e.target.value })} className="w-full px-3 py-2 border rounded-lg">
                   <option value="">Selecione...</option>
                   {bitrixGroups.length > 0 ? (
                     bitrixGroups.map((group, idx) => (
@@ -176,7 +176,7 @@ export const GroupLinkList: React.FC<GroupLinkListProps> = ({ hideAddButton }) =
           <tbody>
             {groupLinks.map(link => {
               const costCenter = costCenters.find(cc => cc.codccusto === link.codccusto);
-              const idGrupoStr = link.id_grupo !== undefined && link.id_grupo !== null ? link.id_grupo.toString() : '';
+              const idGrupoStr = link.idgrupobitrix !== undefined && link.idgrupobitrix !== null ? link.idgrupobitrix.toString() : '';
               const bitrixGroup = Array.isArray(bitrixGroups) ? bitrixGroups.find(bg => bg && bg.ID?.toString() === idGrupoStr) : undefined;
               return (
                 <tr key={link.codccusto} className="border-t hover:bg-gray-50">

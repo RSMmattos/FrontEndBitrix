@@ -52,7 +52,7 @@ export interface CostCenter {
 
 export interface GroupLink {
   codccusto: string;
-  id_grupo: number;
+  idtask: number;
 }
 
 export interface BitrixGroup {
