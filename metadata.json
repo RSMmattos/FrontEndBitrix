@@ -1,0 +1,5 @@
+{
+  "name": "Projeto_Bitrix",
+  "description": "A sophisticated dashboard to visualize and manage tasks fetched from Bitrix24, featuring advanced filtering, real-time search, and a high-performance data table.",
+  "requestFramePermissions": []
+}
