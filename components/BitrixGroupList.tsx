@@ -11,14 +11,11 @@ export const BitrixGroupList: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch('/api/bitrix-groups');
-      if (!response.ok) throw new Error('Erro ao carregar grupos');
+      const response = await fetch('https://agroserra.bitrix24.com.br/rest/187/wdalwcekbog0ke1r/sonet_group.get');
+      if (!response.ok) throw new Error('Erro ao carregar grupos do Bitrix24');
       const data = await response.json();
-      console.log('API Response:', data);
       if (data.result && Array.isArray(data.result)) {
-        setGroups(data.result);
-      } else if (Array.isArray(data)) {
-        setGroups(data);
+        setGroups(data.result.map((g: any) => ({ ...g, ID: g.ID?.toString?.() })));
       } else {
         throw new Error('Formato de resposta inválido');
       }
