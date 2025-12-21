@@ -18,35 +18,33 @@ export const GroupLinkList: React.FC<GroupLinkListProps> = ({ hideAddButton }) =
   const [success, setSuccess] = useState<string | null>(null);
 
   // Carregar dados
-  useEffect(() => {
-    const loadAll = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const [links, centers] = await Promise.all([
-          fetch('http://localhost:3000/api/bgcatividade').then(r => r.json()),
-          fetch('http://localhost:3000/api/gccusto').then(r => r.json())
-        ]);
-        setGroupLinks(links);
-        setCostCenters(centers.filter((cc: CostCenter) => cc.ativo));
-        // Bitrix groups não bloqueia
-        fetch('https://agroserra.bitrix24.com.br/rest/187/wdalwcekbog0ke1r/sonet_group.get')
-          .then(r => r.json())
-          .then(data => {
-            if (data.result && Array.isArray(data.result)) {
-              setBitrixGroups(data.result.map((g: any) => ({ ...g, ID: g.ID?.toString?.() })));
-            } else {
-              setBitrixGroups([]);
-            }
-          })
-          .catch(() => setBitrixGroups([]));
-      } catch (err: any) {
-        setError('Erro ao carregar dados: ' + (err.message || err.toString()));
-      }
-      setLoading(false);
-    };
-    loadAll();
-  }, []);
+  const loadAll = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const [links, centers] = await Promise.all([
+        fetch('http://localhost:3000/api/bgcatividade').then(r => r.json()),
+        fetch('http://localhost:3000/api/gccusto').then(r => r.json())
+      ]);
+      setGroupLinks(links);
+      setCostCenters(centers.filter((cc: CostCenter) => cc.ativo));
+      // Bitrix groups não bloqueia
+      fetch('https://agroserra.bitrix24.com.br/rest/187/wdalwcekbog0ke1r/sonet_group.get')
+        .then(r => r.json())
+        .then(data => {
+          if (data.result && Array.isArray(data.result)) {
+            setBitrixGroups(data.result.map((g: any) => ({ ...g, ID: g.ID?.toString?.() })));
+          } else {
+            setBitrixGroups([]);
+          }
+        })
+        .catch(() => setBitrixGroups([]));
+    } catch (err: any) {
+      setError('Erro ao carregar dados: ' + (err.message || err.toString()));
+    }
+    setLoading(false);
+  };
+  useEffect(() => { loadAll(); }, []);
 
   // Salvar vínculo
   const handleSave = async () => {
@@ -158,7 +156,7 @@ export const GroupLinkList: React.FC<GroupLinkListProps> = ({ hideAddButton }) =
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-black text-slate-900">Vínculos Grupo</h2>
           <div className="flex gap-2">
-            <button onClick={() => window.location.reload()} className="bg-slate-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-slate-700 flex items-center gap-2"><RefreshCw size={16} />Atualizar</button>
+            <button onClick={loadAll} className="bg-slate-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-slate-700 flex items-center gap-2"><RefreshCw size={16} />Atualizar</button>
             {!hideAddButton && <button onClick={() => setShowModal(true)} className="bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-emerald-700 flex items-center gap-2"><Plus size={16} />Novo Vínculo</button>}
           </div>
         </div>
