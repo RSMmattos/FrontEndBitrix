@@ -215,18 +215,23 @@ export const PrioritariasList: React.FC<PrioritariasListProps> = ({ tasks }) => 
                         type="date"
                         value={editandoValor}
                         onChange={async (e) => {
-                          // Corrigir fuso horário: salvar exatamente o valor do input
                           const novaData = e.target.value;
                           setEditandoValor(novaData);
                           setSavingId(item.idtask);
-                          await updateBAtividadeG(item.idtask, { dataconclusao: novaData });
-                          setDados(prev => prev.map(d => d.idtask === item.idtask ? { ...d, dataconclusao: novaData } : d));
+                          await updateBAtividadeG(item.idtask, { dataconclusao: novaData || null });
+                          setDados(prev => prev.map(d => d.idtask === item.idtask ? { ...d, dataconclusao: novaData || undefined } : d));
                           setSavingId(null);
                           setEditandoId(null);
                         }}
                         className="border rounded px-2 py-1 text-xs"
                         disabled={savingId === item.idtask}
                         autoFocus
+                        onKeyDown={e => {
+                          if (e.key === 'Backspace' || e.key === 'Delete') {
+                            setEditandoValor('');
+                          }
+                        }}
+                        placeholder=""
                       />
                     ) : (
                       <span
@@ -237,7 +242,6 @@ export const PrioritariasList: React.FC<PrioritariasListProps> = ({ tasks }) => 
                         style={{ cursor: 'pointer', color: '#2563eb', textDecoration: 'underline' }}
                       >
                         {item.dataconclusao ? (() => {
-                          // Extrai só a parte da data (YYYY-MM-DD) mesmo se vier com hora
                           const dataStr = item.dataconclusao.split('T')[0];
                           const [ano, mes, dia] = dataStr.split('-');
                           return `${dia}/${mes}/${ano}`;
