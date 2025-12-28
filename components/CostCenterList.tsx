@@ -1,12 +1,15 @@
+
 import { API_BASE_URL } from '../constants';
 import React, { useState, useEffect } from 'react';
-import { Loader2, AlertCircle, RefreshCw, ChevronRight, ChevronDown } from 'lucide-react';
+import { Loader2, AlertCircle, RefreshCw, ChevronRight, ChevronDown, Search } from 'lucide-react';
 import { CostCenter } from '../types';
+
 
 export const CostCenterList: React.FC = () => {
   const [costCenters, setCostCenters] = useState<CostCenter[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
 
   const fetchCostCenters = async () => {
     try {
@@ -51,6 +54,12 @@ export const CostCenterList: React.FC = () => {
 
 
 
+  // Filtro de pesquisa
+  const filteredCostCenters = costCenters.filter(cc =>
+    cc.nome.toLowerCase().includes(search.toLowerCase()) ||
+    cc.codccusto.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -60,7 +69,18 @@ export const CostCenterList: React.FC = () => {
           Atualizar
         </button>
       </div>
-
+      <div className="mb-4 flex items-center gap-2">
+        <div className="relative w-full max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+          <input
+            type="text"
+            className="w-full bg-slate-100 border-none rounded-xl py-2.5 pl-10 pr-4 text-sm focus:ring-2 focus:ring-emerald-500 transition-all"
+            placeholder="Buscar por código ou nome..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+        </div>
+      </div>
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
@@ -72,8 +92,8 @@ export const CostCenterList: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {costCenters.length > 0 ? (
-                costCenters.map(cc => (
+              {filteredCostCenters.length > 0 ? (
+                filteredCostCenters.map(cc => (
                   <tr key={cc.codccusto} className="border-t border-slate-100 hover:bg-slate-50/50">
                     <td className="px-6 py-4 text-sm font-medium text-slate-900">{cc.codccusto}</td>
                     <td className="px-6 py-4 text-sm font-medium text-slate-900">{cc.nome}</td>

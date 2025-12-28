@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Loader2, AlertCircle, RefreshCw } from 'lucide-react';
 import { BitrixGroup } from '../types';
@@ -60,7 +61,6 @@ export const BitrixGroupList: React.FC = () => {
           Atualizar
         </button>
       </div>
-
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
