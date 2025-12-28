@@ -339,7 +339,7 @@ const App: React.FC = () => {
         <main className="flex-1 overflow-y-auto p-8 space-y-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-black text-slate-900 tracking-tighter">Gestão Operacional Bitrix</h1>
+              <h1 className="text-3xl font-black text-emerald-700 tracking-tighter">Gestão Operacional Bitrix</h1>
               <p className="text-slate-500 text-sm font-medium">Visualização dinâmica de tarefas por período de criação.</p>
             </div>
             
