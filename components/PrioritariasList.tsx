@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { fetchBitrixTaskById } from '../services/bitrixTaskById';
 import { fetchBAtividadeG, BAtividadeG } from '../services/batividadegService';
 import { User as UserIcon, Hash as HashIcon, Calendar, Search, ArrowRight } from 'lucide-react';
 
@@ -7,6 +8,9 @@ interface PrioritariasListProps {
 }
 
 export const PrioritariasList: React.FC<PrioritariasListProps> = ({ tasks }) => {
+    // Estado para armazenar tasks buscadas dinamicamente
+    const [dynamicTasks, setDynamicTasks] = useState<{[id: string]: {TITLE: string, RESPONSIBLE_NAME: string} | 'notfound'}>({});
+
   const [dados, setDados] = useState<BAtividadeG[]>([]);
   const [loading, setLoading] = useState(true);
   const [consulta, setConsulta] = useState("");
@@ -28,14 +32,63 @@ export const PrioritariasList: React.FC<PrioritariasListProps> = ({ tasks }) => 
   }, []);
 
   // Função para buscar descrição pelo idtask
-  const getNome = (idtask: number) => {
-    const t = tasks.find(tk => String(tk.ID) === String(idtask));
-    return t?.TITLE || '--';
+  // Busca task do Bitrix pela API se não encontrar localmente
+  // Busca task do Bitrix24 pelo webhook, sem limitação de 50
+  const fetchTaskById = async (idtask: number | string) => {
+    const task = await fetchBitrixTaskById(idtask);
+    if (task) {
+      return {
+        TITLE: task.TITLE || 'Sem título',
+        RESPONSIBLE_NAME: task.RESPONSIBLE_NAME || 'Sem responsável'
+      };
+    }
+    return null;
   };
-  const getResponsavel = (idtask: number) => {
+
+  const getNome = (idtask: number | string) => {
     const t = tasks.find(tk => String(tk.ID) === String(idtask));
-    return t?.RESPONSIBLE_NAME || '--';
+    if (t && t.TITLE) return t.TITLE;
+    const dt = dynamicTasks[String(idtask)];
+    if (dt === 'notfound') return 'Não encontrado no Bitrix';
+    if (dt) return dt.TITLE;
+    return 'Buscando...';
   };
+  const getResponsavel = (idtask: number | string) => {
+    const t = tasks.find(tk => String(tk.ID) === String(idtask));
+    if (t && t.RESPONSIBLE_NAME) return t.RESPONSIBLE_NAME;
+    const dt = dynamicTasks[String(idtask)];
+    if (dt === 'notfound') return 'Não encontrado no Bitrix';
+    if (dt) return dt.RESPONSIBLE_NAME;
+    return 'Buscando...';
+  };
+
+  // Ao montar ou atualizar dadosFiltrados, buscar tasks ausentes
+  useEffect(() => {
+    const idsFaltando = dados
+      .map(d => String(d.idtask))
+      .filter(id => !tasks.find(tk => String(tk.ID) === id) && !dynamicTasks[id]);
+    if (idsFaltando.length > 0) {
+      // Limitar buscas simultâneas para evitar bloqueio/lentidão
+      const maxSimultaneous = 5;
+      let running = 0;
+      let queue = [...idsFaltando];
+      const processQueue = () => {
+        while (running < maxSimultaneous && queue.length > 0) {
+          const id = queue.shift();
+          if (!id) continue;
+          running++;
+          fetchTaskById(id).then(task => {
+            setDynamicTasks(prev => ({ ...prev, [id]: task || 'notfound' }));
+          }).finally(() => {
+            running--;
+            processQueue();
+          });
+        }
+      };
+      processQueue();
+    }
+    // eslint-disable-next-line
+  }, [dados, tasks]);
 
   // Filtrar dados apenas ao clicar no botão FILTRAR
   const [dadosFiltrados, setDadosFiltrados] = useState<BAtividadeG[]>([]);
