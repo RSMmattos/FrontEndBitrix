@@ -479,7 +479,7 @@ const App: React.FC = () => {
                   <h3 className="text-base font-black text-slate-800 mb-2">Tarefas Recentes</h3>
                   <ul className="divide-y divide-slate-100">
                     {tasks.slice(0, 5).map(t => (
-                      <li key={t.ID} className="py-2 flex flex-col">
+                      <li key={t.ID} className="py-2 flex flex-col cursor-pointer hover:bg-emerald-50 rounded-lg px-2 transition" onClick={() => setSelectedTask(t)}>
                         <span className="font-bold text-slate-700">{t.TITLE}</span>
                         <span className="text-xs text-slate-400">Iniciada em {t.CREATED_DATE?.slice(0,10)} | Resp: {t.RESPONSIBLE_NAME || '--'}</span>
                       </li>
@@ -492,7 +492,7 @@ const App: React.FC = () => {
                   <h3 className="text-base font-black text-slate-800 mb-2">Tarefas Atrasadas</h3>
                   <ul className="divide-y divide-slate-100">
                     {tasks.filter(t => t.DEADLINE && new Date(t.DEADLINE) < new Date() && t.STATUS !== '5').slice(0, 5).map(t => (
-                      <li key={t.ID} className="py-2 flex flex-col">
+                      <li key={t.ID} className="py-2 flex flex-col cursor-pointer hover:bg-rose-50 rounded-lg px-2 transition" onClick={() => setSelectedTask(t)}>
                         <span className="font-bold text-rose-600">{t.TITLE}</span>
                         <span className="text-xs text-slate-400">Prazo: {t.DEADLINE?.slice(0,10)} | Resp: {t.RESPONSIBLE_NAME || '--'}</span>
                       </li>
@@ -503,7 +503,7 @@ const App: React.FC = () => {
                   <h3 className="text-base font-black text-slate-800 mb-2">Próximas do Prazo</h3>
                   <ul className="divide-y divide-slate-100">
                     {tasks.filter(t => t.DEADLINE && new Date(t.DEADLINE) >= new Date() && t.STATUS !== '5').sort((a, b) => new Date(a.DEADLINE!).getTime() - new Date(b.DEADLINE!).getTime()).slice(0, 5).map(t => (
-                      <li key={t.ID} className="py-2 flex flex-col">
+                      <li key={t.ID} className="py-2 flex flex-col cursor-pointer hover:bg-amber-50 rounded-lg px-2 transition" onClick={() => setSelectedTask(t)}>
                         <span className="font-bold text-emerald-700">{t.TITLE}</span>
                         <span className="text-xs text-slate-400">Prazo: {t.DEADLINE?.slice(0,10)} | Resp: {t.RESPONSIBLE_NAME || '--'}</span>
                       </li>
