@@ -37,9 +37,10 @@ import {
 } from 'lucide-react';
 import { subDays, format } from 'date-fns';
 import { PrioritariasList } from './components/PrioritariasList';
+import { ResumoAtividadesPivot } from './components/ResumoAtividadesPivot';
 // import { Gestao } from './components/Gestao';
 
-type ActiveTab = 'dashboard' | 'activities' | 'cost-centers' | 'group-links' | 'bitrix-groups' | 'usuarios-online' | 'perfil-usuario' | 'prioritarias' | 'consultas';
+type ActiveTab = 'dashboard' | 'activities' | 'cost-centers' | 'group-links' | 'bitrix-groups' | 'usuarios-online' | 'perfil-usuario' | 'prioritarias' | 'consultas' | 'resumo-atividades';
 
 const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -272,6 +273,10 @@ const App: React.FC = () => {
               </div>
             )}
           </div>
+          <button onClick={() => setActiveTab('resumo-atividades')} className={`flex items-center gap-4 w-full px-4 py-3 rounded-xl transition-all ${activeTab === 'resumo-atividades' ? 'bg-emerald-600/10 text-emerald-500' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}>
+            <LayoutDashboard size={20} />
+            {sidebarOpen && <span className="text-sm font-bold">Resumo Atividades</span>}
+          </button>
           <button onClick={() => setActiveTab('group-links')} className={`flex items-center gap-4 w-full px-4 py-3 rounded-xl transition-all ${activeTab === 'group-links' ? 'bg-emerald-600/10 text-emerald-500' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}>
             <Users size={20} />
             {sidebarOpen && <span className="text-sm font-bold">Vínculos Grupo</span>}
@@ -449,6 +454,8 @@ const App: React.FC = () => {
             <PerfilUsuario idusuario={currentUser?.idusuario || currentUser?.codusuario || ''} />
           ) : activeTab === 'prioritarias' ? (
             <PrioritariasList tasks={tasks} />
+          ) : activeTab === 'resumo-atividades' ? (
+            <ResumoAtividadesPivot />
           ) : (
 
 

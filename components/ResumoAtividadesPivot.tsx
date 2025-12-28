@@ -4,7 +4,7 @@ import { API_BASE_URL } from '../constants';
 import DetalhesAtividadesModal from './DetalhesAtividadesModal';
 
 
-const ResumoAtividadesPivot: React.FC = () => {
+export const ResumoAtividadesPivot: React.FC = () => {
   const [data, setData] = useState<any>(null);
   const [dataConclusao, setDataConclusao] = useState<any>(null);
   const [loading, setLoading] = useState(true);
