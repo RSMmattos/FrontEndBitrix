@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { fetchBitrixTaskById } from '../services/bitrixTaskById';
-import { fetchBAtividadeG, BAtividadeG } from '../services/batividadegService';
+import { fetchBAtividadeG, updateBAtividadeG, BAtividadeG } from '../services/batividadegService';
 import { User as UserIcon, Hash as HashIcon, Calendar, Search, ArrowRight } from 'lucide-react';
 
 interface PrioritariasListProps {
@@ -129,6 +129,11 @@ export const PrioritariasList: React.FC<PrioritariasListProps> = ({ tasks }) => 
     // eslint-disable-next-line
   }, [loading]);
 
+  // Estado para edição da data de conclusão
+  const [editandoId, setEditandoId] = useState<number | null>(null);
+  const [editandoValor, setEditandoValor] = useState<string>('');
+  const [savingId, setSavingId] = useState<number | null>(null);
+
   return (
     <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8">
       <h2 className="text-2xl font-black text-rose-600 mb-6">Tarefas Prioritárias</h2>
@@ -165,6 +170,7 @@ export const PrioritariasList: React.FC<PrioritariasListProps> = ({ tasks }) => 
               <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Urgente Diretor</th>
               <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Prazo Final Diretor</th>
               <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Comentário Diretor</th>
+              <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Data Conclusão</th>
               <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Concluída Bitrix</th>
             </tr>
           </thead>
@@ -203,6 +209,42 @@ export const PrioritariasList: React.FC<PrioritariasListProps> = ({ tasks }) => 
                   <td className="px-6 py-4 text-sm font-bold text-rose-600">{item.prioridade ? 'SIM' : 'NÃO'}</td>
                   <td className="px-6 py-4 text-sm font-bold text-slate-600">{item.dataprazofinal ? new Date(item.dataprazofinal).toLocaleDateString('pt-BR') : '--'}</td>
                   <td className="px-6 py-4 text-sm text-slate-700">{item.comentario || '--'}</td>
+                  <td className="px-6 py-4 text-sm">
+                    {editandoId === item.idtask ? (
+                      <input
+                        type="date"
+                        value={editandoValor}
+                        onChange={async (e) => {
+                          // Corrigir fuso horário: salvar exatamente o valor do input
+                          const novaData = e.target.value;
+                          setEditandoValor(novaData);
+                          setSavingId(item.idtask);
+                          await updateBAtividadeG(item.idtask, { dataconclusao: novaData });
+                          setDados(prev => prev.map(d => d.idtask === item.idtask ? { ...d, dataconclusao: novaData } : d));
+                          setSavingId(null);
+                          setEditandoId(null);
+                        }}
+                        className="border rounded px-2 py-1 text-xs"
+                        disabled={savingId === item.idtask}
+                        autoFocus
+                      />
+                    ) : (
+                      <span
+                        onClick={() => {
+                          setEditandoId(item.idtask);
+                          setEditandoValor(item.dataconclusao ? item.dataconclusao.split('T')[0] : '');
+                        }}
+                        style={{ cursor: 'pointer', color: '#2563eb', textDecoration: 'underline' }}
+                      >
+                        {item.dataconclusao ? (() => {
+                          // Extrai só a parte da data (YYYY-MM-DD) mesmo se vier com hora
+                          const dataStr = item.dataconclusao.split('T')[0];
+                          const [ano, mes, dia] = dataStr.split('-');
+                          return `${dia}/${mes}/${ano}`;
+                        })() : '---'}
+                      </span>
+                    )}
+                  </td>
                   <td className="px-6 py-4 text-sm font-bold text-emerald-700">{concluida}</td>
                 </tr>
               );

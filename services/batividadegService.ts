@@ -8,6 +8,7 @@ export interface BAtividadeG {
   comentario?: string;
   prioridade?: boolean;
   dataprazofinal?: string;
+  dataconclusao?: string;
 }
 
 export const fetchBAtividadeG = async (): Promise<BAtividadeG[]> => {
