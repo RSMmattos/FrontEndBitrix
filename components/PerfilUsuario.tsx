@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { API_BASE_URL } from '../constants';
 import { getCurrentUser } from '../services/authService';
 
@@ -8,7 +8,24 @@ interface PerfilUsuarioProps {
 }
 
 export const PerfilUsuario: React.FC<PerfilUsuarioProps> = ({ idusuario, onSenhaAlterada }) => {
-  const user = getCurrentUser() || {};
+  const [user, setUser] = useState(getCurrentUser() || {});
+
+  // Busca o usuário atualizado do backend ao montar
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const id = typeof idusuario === 'string' ? parseInt(idusuario, 10) : idusuario;
+        const response = await fetch(`${API_BASE_URL}/api/usuario/${id}`);
+        if (response.ok) {
+          const data = await response.json();
+          setUser(data);
+        }
+      } catch (e) {
+        // Se der erro, mantém o user do localStorage
+      }
+    };
+    fetchUser();
+  }, [idusuario]);
   const [modalOpen, setModalOpen] = useState(false);
   const [senhaAtual, setSenhaAtual] = useState('');
   const [senhaNova, setSenhaNova] = useState('');
@@ -70,14 +87,12 @@ export const PerfilUsuario: React.FC<PerfilUsuarioProps> = ({ idusuario, onSenha
               <tr>
                 <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Usuário</th>
                 <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Perfil</th>
-                <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Status</th>
               </tr>
             </thead>
             <tbody>
               <tr>
                 <td className="px-6 py-4 text-sm font-medium text-slate-900">{user.nome_usuario || user.name || '-'}</td>
                 <td className="px-6 py-4 text-sm font-medium text-slate-900">{user.codperfil === 1 || user.codperfil === '1' ? 'Administrador' : 'Usuário'}</td>
-                <td className="px-6 py-4 text-sm font-medium text-slate-900">{user.ativo === 1 || user.ativo === true ? 'Ativo' : 'Inativo'}</td>
               </tr>
             </tbody>
           </table>

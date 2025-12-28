@@ -235,10 +235,6 @@ const App: React.FC = () => {
           </div>
         </div>
         <nav className="flex-1 px-4 py-4 space-y-1">
-                    <button onClick={() => setActiveTab('perfil-usuario')} className={`flex items-center gap-4 w-full px-4 py-3 rounded-xl transition-all ${activeTab === 'perfil-usuario' ? 'bg-emerald-600/10 text-emerald-500' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}>
-                      <Users size={20} />
-                      {sidebarOpen && <span className="text-sm font-bold">Perfil do Usuário</span>}
-                    </button>
           <button onClick={() => setActiveTab('dashboard')} className={`flex items-center gap-4 w-full px-4 py-3 rounded-xl transition-all ${activeTab === 'dashboard' ? 'bg-emerald-600/10 text-emerald-500' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}>
             <LayoutDashboard size={20} />
             {sidebarOpen && <span className="text-sm font-bold">Dashboard</span>}
@@ -286,6 +282,10 @@ const App: React.FC = () => {
             <LogOut size={20} />
             {sidebarOpen && <span className="text-sm">Sair</span>}
           </button>
+            <button onClick={() => setActiveTab('perfil-usuario')} className={`flex items-center gap-4 w-full px-4 py-3 rounded-xl transition-all ${activeTab === 'perfil-usuario' ? 'bg-emerald-600/10 text-emerald-500' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}>
+              <Users size={20} />
+              {sidebarOpen && <span className="text-sm font-bold">Perfil do Usuário</span>}
+            </button>
         </div>
       </aside>
 
