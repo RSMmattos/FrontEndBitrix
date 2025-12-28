@@ -240,6 +240,10 @@ const App: React.FC = () => {
             <LayoutDashboard size={20} />
             {sidebarOpen && <span className="text-sm font-bold">Dashboard</span>}
           </button>
+          <button onClick={() => setActiveTab('group-links')} className={`flex items-center gap-4 w-full px-4 py-3 rounded-xl transition-all ${activeTab === 'group-links' ? 'bg-emerald-600/10 text-emerald-500' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}>
+            <Users size={20} />
+            {sidebarOpen && <span className="text-sm font-bold">Vínculos Grupo</span>}
+          </button>
           <button onClick={() => setActiveTab('activities')} className={`flex items-center gap-4 w-full px-4 py-3 rounded-xl transition-all ${activeTab === 'activities' ? 'bg-emerald-600/10 text-emerald-500' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}>
             <ListTodo size={20} />
             {sidebarOpen && <span className="text-sm font-bold">Tabela Atividades</span>}
@@ -247,10 +251,6 @@ const App: React.FC = () => {
           <button onClick={() => setActiveTab('prioritarias')} className={`flex items-center gap-4 w-full px-4 py-3 rounded-xl transition-all ${activeTab === 'prioritarias' ? 'bg-rose-600/10 text-rose-500' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}>
             <AlertCircle size={20} />
             {sidebarOpen && <span className="text-sm font-bold">Prioritárias</span>}
-          </button>
-          <button onClick={() => setActiveTab('group-links')} className={`flex items-center gap-4 w-full px-4 py-3 rounded-xl transition-all ${activeTab === 'group-links' ? 'bg-emerald-600/10 text-emerald-500' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}>
-            <Users size={20} />
-            {sidebarOpen && <span className="text-sm font-bold">Vínculos Grupo</span>}
           </button>
           {/* Consultas agrupadas */}
           <div className="relative">
@@ -276,10 +276,6 @@ const App: React.FC = () => {
           <button onClick={() => setActiveTab('resumo-atividades')} className={`flex items-center gap-4 w-full px-4 py-3 rounded-xl transition-all ${activeTab === 'resumo-atividades' ? 'bg-emerald-600/10 text-emerald-500' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}>
             <LayoutDashboard size={20} />
             {sidebarOpen && <span className="text-sm font-bold">Resumo Atividades</span>}
-          </button>
-          <button onClick={() => setActiveTab('group-links')} className={`flex items-center gap-4 w-full px-4 py-3 rounded-xl transition-all ${activeTab === 'group-links' ? 'bg-emerald-600/10 text-emerald-500' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}>
-            <Users size={20} />
-            {sidebarOpen && <span className="text-sm font-bold">Vínculos Grupo</span>}
           </button>
         </nav>
         <div className="p-4 border-t border-white/5">
