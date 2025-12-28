@@ -539,6 +539,41 @@ const App: React.FC = () => {
               </div>
             </div>
           )}
+          {activeTab === 'dashboard' && (
+            <>
+              {/* Painel do usuário logado */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div className="col-span-1 md:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm flex items-center gap-6 p-6">
+                  <div className="flex-shrink-0">
+                    <div className="w-20 h-20 rounded-full bg-emerald-100 flex items-center justify-center text-4xl font-black text-emerald-700">
+                      {(currentUser?.nome_usuario || currentUser?.NOME || '').slice(0,2).toUpperCase()}
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <h2 className="text-2xl font-black text-slate-900 mb-1 flex items-center gap-2">
+                      {currentUser?.nome_usuario || currentUser?.NOME || '--'}
+                      <span className="ml-2 px-2 py-0.5 rounded bg-emerald-700 text-white text-xs font-black">{perfilLabel}</span>
+                    </h2>
+                    <div className="text-slate-500 text-sm font-medium mb-1">{currentUser?.CARGO || currentUser?.WORK_POSITION || '--'}</div>
+                    <div className="flex items-center gap-4 text-xs text-slate-400">
+                      <span>Email: <a href={`mailto:${currentUser?.EMAIL || ''}`} className="text-emerald-700 underline">{currentUser?.EMAIL || '--'}</a></span>
+                      <span>Telefone: {currentUser?.TELEFONE || currentUser?.PERSONAL_MOBILE || '--'}</span>
+                      <span>Status: <span className={`font-bold ${currentUser?.ativo === 1 || currentUser?.ACTIVE === 'Y' ? 'text-green-600' : 'text-gray-400'}`}>{(currentUser?.ativo === 1 || currentUser?.ACTIVE === 'Y') ? 'Ativo' : 'Inativo'}</span></span>
+                    </div>
+                    <div className="mt-2 flex gap-3">
+                      <a href={`https://agroserra.bitrix24.com.br/company/personal/user/${currentUser?.ID || currentUser?.idusuario || ''}/`} target="_blank" rel="noopener noreferrer" className="bg-emerald-600 text-white px-4 py-2 rounded-lg text-xs font-black hover:bg-emerald-700 transition">Ver Perfil Bitrix24</a>
+                      <a href={`mailto:${currentUser?.EMAIL || ''}`} className="bg-slate-100 text-emerald-700 px-4 py-2 rounded-lg text-xs font-black hover:bg-emerald-100 transition">Enviar E-mail</a>
+                    </div>
+                  </div>
+                </div>
+                {/* Cards de estatísticas de usuários */}
+                <div className="col-span-1 md:col-span-2 grid grid-cols-2 gap-6">
+                  <StatsCard title="Usuários Online" value={usuariosOnline.length} icon={Users} color="bg-emerald-600" description="Usuários atualmente online no sistema." />
+                  <StatsCard title="Total de Usuários" value={usuariosOnline.length} icon={Users} color="bg-indigo-600" description="Total de usuários cadastrados (online)." />
+                </div>
+              </div>
+            </>
+          )}
         </main>
       </div>
 
