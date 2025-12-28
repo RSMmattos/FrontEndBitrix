@@ -170,7 +170,7 @@ export const PrioritariasList: React.FC<PrioritariasListProps> = ({ tasks }) => 
               <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Urgente Diretor</th>
               <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Prazo Final Diretor</th>
               <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Comentário Diretor</th>
-              <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Data Conclusão</th>
+              <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Data Conclusão Diretor</th>
               <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Concluída Bitrix</th>
             </tr>
           </thead>
