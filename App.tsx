@@ -13,6 +13,7 @@ import { TableSkeleton } from './components/TableSkeleton';
 import { EditableTaskRow } from './components/EditableTaskRow';
 import { CostCenterList } from './components/CostCenterList';
 import { GroupLinkList } from './components/GroupLinkList';
+import { UsuariosOnline } from './components/UsuariosOnline';
 // import { VisaoGroupLinkList } from './components/VisaoGroupLinkList';
 // import { VisaoMatriz } from './components/VisaoMatriz';
 import { fetchTasks } from './services/bitrixService';
@@ -37,7 +38,7 @@ import { subDays, format } from 'date-fns';
 import { PrioritariasList } from './components/PrioritariasList';
 // import { Gestao } from './components/Gestao';
 
-type ActiveTab = 'dashboard' | 'activities' | 'cost-centers' | 'group-links' | 'bitrix-groups' | 'prioritarias' | 'consultas';
+type ActiveTab = 'dashboard' | 'activities' | 'cost-centers' | 'group-links' | 'bitrix-groups' | 'usuarios-online' | 'prioritarias' | 'consultas';
 
 const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -266,6 +267,7 @@ const App: React.FC = () => {
               <div className="ml-8 mt-1 space-y-1">
                 <button onClick={() => { setActiveTab('cost-centers'); setConsultasOpen(true); }} className={`flex items-center gap-2 w-full px-2 py-2 rounded-lg text-left text-xs font-bold transition-all ${activeTab === 'cost-centers' ? 'bg-emerald-600/20 text-emerald-700' : 'text-slate-400 hover:text-emerald-600 hover:bg-emerald-50'}`}>Centros de Custo</button>
                 <button onClick={() => { setActiveTab('bitrix-groups'); setConsultasOpen(true); }} className={`flex items-center gap-2 w-full px-2 py-2 rounded-lg text-left text-xs font-bold transition-all ${activeTab === 'bitrix-groups' ? 'bg-emerald-600/20 text-emerald-700' : 'text-slate-400 hover:text-emerald-600 hover:bg-emerald-50'}`}>Grupos Bitrix</button>
+                <button onClick={() => { setActiveTab('usuarios-online'); setConsultasOpen(true); }} className={`flex items-center gap-2 w-full px-2 py-2 rounded-lg text-left text-xs font-bold transition-all ${activeTab === 'usuarios-online' ? 'bg-emerald-600/20 text-emerald-700' : 'text-slate-400 hover:text-emerald-600 hover:bg-emerald-50'}`}>Usuários Online</button>
               </div>
             )}
           </div>
@@ -436,6 +438,8 @@ const App: React.FC = () => {
             <GroupLinkList />
           ) : activeTab === 'bitrix-groups' ? (
             <BitrixGroupList />
+          ) : activeTab === 'usuarios-online' ? (
+            <UsuariosOnline />
           ) : activeTab === 'prioritarias' ? (
             <PrioritariasList tasks={tasks} />
           ) : (
