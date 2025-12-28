@@ -38,10 +38,14 @@ export enum TaskStatus {
 }
 
 export interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
+  id?: string;
+  name?: string;
+  email?: string;
+  role?: string;
+  nome_usuario?: string;
+  codperfil?: number;
+  codusuario?: string;
+  ativo?: boolean | number;
 }
 
 export interface CostCenter {

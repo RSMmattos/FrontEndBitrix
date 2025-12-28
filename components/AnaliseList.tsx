@@ -4,7 +4,7 @@
 
 
 import React, { useEffect, useState } from 'react';
-import { API_BASE_URL } from '../config';
+import { API_BASE_URL } from '../constants';
 import { fetchBAtividadeG } from '../services/batividadegService';
 import { fetchTasks } from '../services/bitrixService';
 import { CostCenter, BitrixGroup, BitrixTask } from '../types';

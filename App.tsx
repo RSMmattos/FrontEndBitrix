@@ -41,6 +41,36 @@ type ActiveTab = 'dashboard' | 'activities' | 'cost-centers' | 'group-links' | '
 
 const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+    // Garante que o usuário admin padrão exista no banco
+    useEffect(() => {
+      const ensureAdminUser = async () => {
+        try {
+          // Busca todos os usuários
+          const res = await fetch('http://localhost:3001/api/usuario');
+          if (res.ok) {
+            const users = await res.json();
+            if (Array.isArray(users) && users.some((u) => u.codusuario === 'admin')) {
+              return; // Já existe, não cria
+            }
+          }
+          // Se não existe, cria
+          await fetch('http://localhost:3001/api/usuario', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              codperfil: 1,
+              codusuario: 'admin',
+              nome_usuario: 'admin',
+              senha: 'sistema1',
+              ativo: 1
+            })
+          });
+        } catch (e) {
+          // Ignora erro
+        }
+      };
+      ensureAdminUser();
+    }, []);
   const [isAuthChecking, setIsAuthChecking] = useState(true);
   const [activeTab, setActiveTab] = useState<ActiveTab>('activities'); 
   const [tasks, setTasks] = useState<BitrixTask[]>([]);
@@ -175,12 +205,26 @@ const App: React.FC = () => {
   if (isAuthChecking) return <div className="min-h-screen bg-[#0a0f0d] flex items-center justify-center"><Loader2 className="animate-spin text-emerald-500" size={48} /></div>;
   if (!currentUser) return <Login onLoginSuccess={setCurrentUser} />;
 
+  // Extrair nome_usuario e codperfil do usuário logado (usando exatamente os campos da API)
+  const nomeUsuario = (currentUser as any).nome_usuario;
+  const codPerfil = (currentUser as any).codperfil;
+  let perfilLabel = 'Usuário';
+  if (codPerfil === 1 || codPerfil === '1') perfilLabel = 'ADM';
+
+  // Fallback visual para depuração
+  const debugUser = !nomeUsuario || !codPerfil;
+
   return (
     <div className="min-h-screen bg-[#f8fafc] flex overflow-hidden">
       <aside className={`${sidebarOpen ? 'w-64' : 'w-20'} bg-[#0a0f0d] transition-all duration-300 flex flex-col shrink-0 z-30`}>
         <div className="p-6 h-24 flex items-center gap-3">
           <div className="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center text-white font-black shrink-0">A</div>
-          {sidebarOpen && <span className="text-white font-black text-lg tracking-tighter">AGROSERRA</span>}
+          <div className="flex flex-col">
+            {sidebarOpen && <span className="text-white font-black text-lg tracking-tighter">AGROSERRA</span>}
+            {sidebarOpen && (
+              <span className="text-xs text-emerald-200 font-bold mt-1">{nomeUsuario} <span className="ml-2 px-2 py-0.5 rounded bg-emerald-700 text-white text-[10px] font-black">{perfilLabel}</span></span>
+            )}
+          </div>
         </div>
         <nav className="flex-1 px-4 py-4 space-y-1">
           <button onClick={() => setActiveTab('dashboard')} className={`flex items-center gap-4 w-full px-4 py-3 rounded-xl transition-all ${activeTab === 'dashboard' ? 'bg-emerald-600/10 text-emerald-500' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}>

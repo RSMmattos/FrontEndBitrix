@@ -1,26 +1,24 @@
 
 import { User } from '../types';
+import { API_BASE_URL } from '../constants';
 
 const USER_INFO_KEY = 'agroserra_user_data';
 
 export const login = async (username: string, password: string): Promise<User> => {
-  // Credenciais padrão
-  const defaultUsername = 'admin';
-  const defaultPassword = '123456';
-
-  if (username === defaultUsername && password === defaultPassword) {
-    const user: User = {
-      id: '1',
-      name: 'Administrador',
-      email: 'admin@example.com',
-      role: 'Administrador',
-    };
-
-    localStorage.setItem(USER_INFO_KEY, JSON.stringify(user));
-    return user;
-  } else {
-    throw new Error('Credenciais inválidas.');
+  const response = await fetch(`${API_BASE_URL}/api/usuario/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ codusuario: username, senha: password })
+  });
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || 'Credenciais inválidas.');
   }
+  const data = await response.json();
+  const user = data.user || data;
+  console.log('Usuário retornado do login:', user);
+  localStorage.setItem(USER_INFO_KEY, JSON.stringify(user));
+  return user;
 };
 
 export const logout = () => {
