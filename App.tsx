@@ -235,10 +235,15 @@ const App: React.FC = () => {
           <button onClick={() => setSidebarOpen(!sidebarOpen)} className="text-white bg-emerald-700 hover:bg-emerald-800 rounded-lg p-2 transition-all">
             <Menu size={22} />
           </button>
-          {sidebarOpen && <span className="text-white font-black text-lg tracking-tighter ml-2">AGROSERRA</span>}
+          {sidebarOpen && (
+            <div className="flex flex-col ml-2">
+              <span className="text-white font-black text-lg tracking-tighter">AGROSERRA</span>
+              <span className="text-emerald-200 text-xs font-semibold mt-0.5">Gerenciamento de atividades</span>
+            </div>
+          )}
         </div>
         <div className="p-6 flex items-center gap-3">
-          <div className="w-4 h-4 bg-emerald-400/60 rounded-full shadow-inner mr-2 animate-pulse" title="Online"></div>
+          <div className="w-4 h-4 bg-emerald-400/60 rounded-full shadow-inner animate-pulse" title="Online"></div>
           <div className="flex flex-col">
             {sidebarOpen && (
               <span className="text-xs text-emerald-200 font-bold mt-1">{nomeUsuario} <span className="ml-2 px-2 py-0.5 rounded bg-emerald-700 text-white text-[10px] font-black">{perfilLabel}</span></span>
