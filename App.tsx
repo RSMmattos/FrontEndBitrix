@@ -245,6 +245,10 @@ const App: React.FC = () => {
             <AlertCircle size={20} />
             {sidebarOpen && <span className="text-sm font-bold">Prioritárias</span>}
           </button>
+          <button onClick={() => setActiveTab('group-links')} className={`flex items-center gap-4 w-full px-4 py-3 rounded-xl transition-all ${activeTab === 'group-links' ? 'bg-emerald-600/10 text-emerald-500' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}>
+            <Users size={20} />
+            {sidebarOpen && <span className="text-sm font-bold">Vínculos Grupo</span>}
+          </button>
           {/* Consultas agrupadas */}
           <div className="relative">
             <button
