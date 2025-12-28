@@ -238,7 +238,7 @@ const App: React.FC = () => {
           {sidebarOpen && <span className="text-white font-black text-lg tracking-tighter ml-2">AGROSERRA</span>}
         </div>
         <div className="p-6 flex items-center gap-3">
-          <div className="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center text-white font-black shrink-0">A</div>
+          <div className="w-4 h-4 bg-emerald-400/60 rounded-full shadow-inner mr-2 animate-pulse" title="Online"></div>
           <div className="flex flex-col">
             {sidebarOpen && (
               <span className="text-xs text-emerald-200 font-bold mt-1">{nomeUsuario} <span className="ml-2 px-2 py-0.5 rounded bg-emerald-700 text-white text-[10px] font-black">{perfilLabel}</span></span>
