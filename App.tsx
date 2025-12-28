@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { fetchUsuariosOnline, UsuarioOnline } from './services/usuariosOnlineService';
 import { BitrixTask, TaskStatus, TaskPriority, User } from './types';
 import { updateTask } from './services/bitrixService';
 import { fetchMergedTasks } from './services/mergedTasksService';
@@ -43,6 +44,15 @@ import { ResumoAtividadesPivot } from './components/ResumoAtividadesPivot';
 type ActiveTab = 'dashboard' | 'activities' | 'cost-centers' | 'group-links' | 'bitrix-groups' | 'usuarios-online' | 'perfil-usuario' | 'prioritarias' | 'consultas' | 'resumo-atividades';
 
 const App: React.FC = () => {
+    // Usuários online para exibir no topo
+    const [usuariosOnline, setUsuariosOnline] = useState<UsuarioOnline[]>([]);
+    useEffect(() => {
+      fetchUsuariosOnline().then(users => setUsuariosOnline(users.filter(u => u.ONLINE === 'Online')));
+      const interval = setInterval(() => {
+        fetchUsuariosOnline().then(users => setUsuariosOnline(users.filter(u => u.ONLINE === 'Online')));
+      }, 30000); // Atualiza a cada 30s
+      return () => clearInterval(interval);
+    }, []);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
     // Garante que o usuário admin padrão exista no banco
     useEffect(() => {
@@ -292,15 +302,26 @@ const App: React.FC = () => {
 
       <div className="flex-1 flex flex-col h-screen overflow-hidden">
         <header className="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-8 shrink-0">
-          <div className="relative w-96">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-            <input 
-              type="text" 
-              placeholder="Buscar por ID, Nome ou Responsável..." 
-              className="w-full bg-slate-100 border-none rounded-xl py-2.5 pl-10 pr-4 text-sm focus:ring-2 focus:ring-emerald-500 transition-all"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+          <div className="flex items-center gap-4">
+            <div className="relative w-96">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+              <input 
+                type="text" 
+                placeholder="Buscar por ID, Nome ou Responsável..." 
+                className="w-full bg-slate-100 border-none rounded-xl py-2.5 pl-10 pr-4 text-sm focus:ring-2 focus:ring-emerald-500 transition-all"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            {/* Usuários online mais próximos da barra de pesquisa */}
+            <div className="flex items-center gap-2 max-w-[40vw] overflow-x-auto no-scrollbar">
+              {usuariosOnline.length > 0 && (
+                <span className="text-xs font-bold text-emerald-700 mr-2">Online:</span>
+              )}
+              {usuariosOnline.map(u => (
+                <span key={u.ID} className="px-2 py-1 bg-emerald-100 text-emerald-800 rounded-lg text-xs font-bold whitespace-nowrap">{u.NOME}</span>
+              ))}
+            </div>
           </div>
           <div className="flex items-center gap-4">
              {Object.keys(pendingChanges).length > 0 && (
