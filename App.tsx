@@ -37,7 +37,7 @@ import { subDays, format } from 'date-fns';
 import { PrioritariasList } from './components/PrioritariasList';
 // import { Gestao } from './components/Gestao';
 
-type ActiveTab = 'dashboard' | 'activities' | 'cost-centers' | 'group-links' | 'bitrix-groups' | 'prioritarias';
+type ActiveTab = 'dashboard' | 'activities' | 'cost-centers' | 'group-links' | 'bitrix-groups' | 'prioritarias' | 'consultas';
 
 const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -82,6 +82,7 @@ const App: React.FC = () => {
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [selectedTask, setSelectedTask] = useState<BitrixTask | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [consultasOpen, setConsultasOpen] = useState(false);
   // const [showGestao, setShowGestao] = useState(false);
   // const [costCenters, setCostCenters] = useState([]);
   // const [groupLinks, setGroupLinks] = useState([]);
@@ -217,10 +218,15 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#f8fafc] flex overflow-hidden">
       <aside className={`${sidebarOpen ? 'w-64' : 'w-20'} bg-[#0a0f0d] transition-all duration-300 flex flex-col shrink-0 z-30`}>
-        <div className="p-6 h-24 flex items-center gap-3">
+        <div className="flex items-center justify-between p-4 h-16 border-b border-white/10">
+          <button onClick={() => setSidebarOpen(!sidebarOpen)} className="text-white bg-emerald-700 hover:bg-emerald-800 rounded-lg p-2 transition-all">
+            <Menu size={22} />
+          </button>
+          {sidebarOpen && <span className="text-white font-black text-lg tracking-tighter ml-2">AGROSERRA</span>}
+        </div>
+        <div className="p-6 flex items-center gap-3">
           <div className="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center text-white font-black shrink-0">A</div>
           <div className="flex flex-col">
-            {sidebarOpen && <span className="text-white font-black text-lg tracking-tighter">AGROSERRA</span>}
             {sidebarOpen && (
               <span className="text-xs text-emerald-200 font-bold mt-1">{nomeUsuario} <span className="ml-2 px-2 py-0.5 rounded bg-emerald-700 text-white text-[10px] font-black">{perfilLabel}</span></span>
             )}
@@ -239,19 +245,30 @@ const App: React.FC = () => {
             <AlertCircle size={20} />
             {sidebarOpen && <span className="text-sm font-bold">Prioritárias</span>}
           </button>
-          <button onClick={() => setActiveTab('cost-centers')} className={`flex items-center gap-4 w-full px-4 py-3 rounded-xl transition-all ${activeTab === 'cost-centers' ? 'bg-emerald-600/10 text-emerald-500' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}>
-            <Layers size={20} />
-            {sidebarOpen && <span className="text-sm font-bold">Centros de Custo</span>}
-          </button>
+          {/* Consultas agrupadas */}
+          <div className="relative">
+            <button
+              onClick={() => setConsultasOpen((open) => !open)}
+              className={`flex items-center gap-4 w-full px-4 py-3 rounded-xl transition-all ${['cost-centers','bitrix-groups'].includes(activeTab) || consultasOpen ? 'bg-emerald-600/10 text-emerald-500' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}
+            >
+              <Filter size={20} />
+              {sidebarOpen && <span className="text-sm font-bold">Consultas</span>}
+              {sidebarOpen && (
+                <span className={`ml-auto transition-transform ${consultasOpen ? 'rotate-90' : ''}`}>▶</span>
+              )}
+            </button>
+            {/* Submenu */}
+            {sidebarOpen && consultasOpen && (
+              <div className="ml-8 mt-1 space-y-1">
+                <button onClick={() => { setActiveTab('cost-centers'); setConsultasOpen(true); }} className={`flex items-center gap-2 w-full px-2 py-2 rounded-lg text-left text-xs font-bold transition-all ${activeTab === 'cost-centers' ? 'bg-emerald-600/20 text-emerald-700' : 'text-slate-400 hover:text-emerald-600 hover:bg-emerald-50'}`}>Centros de Custo</button>
+                <button onClick={() => { setActiveTab('bitrix-groups'); setConsultasOpen(true); }} className={`flex items-center gap-2 w-full px-2 py-2 rounded-lg text-left text-xs font-bold transition-all ${activeTab === 'bitrix-groups' ? 'bg-emerald-600/20 text-emerald-700' : 'text-slate-400 hover:text-emerald-600 hover:bg-emerald-50'}`}>Grupos Bitrix</button>
+              </div>
+            )}
+          </div>
           <button onClick={() => setActiveTab('group-links')} className={`flex items-center gap-4 w-full px-4 py-3 rounded-xl transition-all ${activeTab === 'group-links' ? 'bg-emerald-600/10 text-emerald-500' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}>
             <Users size={20} />
             {sidebarOpen && <span className="text-sm font-bold">Vínculos Grupo</span>}
           </button>
-          <button onClick={() => setActiveTab('bitrix-groups')} className={`flex items-center gap-4 w-full px-4 py-3 rounded-xl transition-all ${activeTab === 'bitrix-groups' ? 'bg-emerald-600/10 text-emerald-500' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}>
-            <Layers size={20} />
-            {sidebarOpen && <span className="text-sm font-bold">Grupos Bitrix</span>}
-          </button>
-
         </nav>
         <div className="p-4 border-t border-white/5">
           <button onClick={logout} className="flex items-center gap-4 w-full px-4 py-3 text-rose-500 hover:bg-rose-500/10 rounded-xl font-bold transition-all">
