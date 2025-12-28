@@ -10,7 +10,7 @@ export const fetchBitrixTaskById = async (id: string | number): Promise<BitrixTa
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         taskId: String(id),
-        select: ["ID", "TITLE", "RESPONSIBLE_ID", "RESPONSIBLE_NAME"]
+        select: ["ID", "TITLE", "RESPONSIBLE_ID", "RESPONSIBLE_NAME", "STATUS"]
       })
     });
     if (!response.ok) return null;
@@ -27,7 +27,7 @@ export const fetchBitrixTaskById = async (id: string | number): Promise<BitrixTa
       DEADLINE: null,
       CLOSED_DATE: null,
       PRIORITY: '',
-      STATUS: '',
+      STATUS: String(t.status || t.STATUS || ''),
       PARENT_ID: null,
       GROUP_NAME: '',
       AUDITORS: [],

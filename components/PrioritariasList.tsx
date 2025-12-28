@@ -39,7 +39,8 @@ export const PrioritariasList: React.FC<PrioritariasListProps> = ({ tasks }) => 
     if (task) {
       return {
         TITLE: task.TITLE || 'Sem título',
-        RESPONSIBLE_NAME: task.RESPONSIBLE_NAME || 'Sem responsável'
+        RESPONSIBLE_NAME: task.RESPONSIBLE_NAME || 'Sem responsável',
+        STATUS: task.STATUS || ''
       };
     }
     return null;
@@ -161,33 +162,51 @@ export const PrioritariasList: React.FC<PrioritariasListProps> = ({ tasks }) => 
               <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">ID Task</th>
               <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Nome</th>
               <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Responsável</th>
-              <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Urgente?</th>
-              <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Prazo Final</th>
-              <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Comentário</th>
+              <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Urgente Diretor</th>
+              <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Prazo Final Diretor</th>
+              <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Comentário Diretor</th>
+              <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Concluída Bitrix</th>
             </tr>
           </thead>
           <tbody>
-            {dadosFiltrados.map((item) => (
-              <tr key={item.idtask} className="border-b border-slate-100">
-                <td className="px-6 py-4 text-sm font-bold">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-black text-slate-400">#{item.idtask}</span>
-                  </div>
-                </td>
-                <td className="px-6 py-4 text-sm text-slate-700">{getNome(item.idtask)}</td>
-                <td className="px-6 py-4 text-sm text-slate-600">
-                  <div className="flex items-center gap-2">
-                    <span className="w-7 h-7 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-700 shrink-0">
-                      <UserIcon size={14} />
-                    </span>
-                    <span>{getResponsavel(item.idtask)}</span>
-                  </div>
-                </td>
-                <td className="px-6 py-4 text-sm font-bold text-rose-600">{item.prioridade ? 'SIM' : 'NÃO'}</td>
-                <td className="px-6 py-4 text-sm font-bold text-slate-600">{item.dataprazofinal ? new Date(item.dataprazofinal).toLocaleDateString('pt-BR') : '--'}</td>
-                <td className="px-6 py-4 text-sm text-slate-700">{item.comentario || '--'}</td>
-              </tr>
-            ))}
+            {dadosFiltrados.map((item) => {
+              // Função para obter STATUS da task
+              let status: string | undefined = undefined;
+              const t = tasks.find(tk => String(tk.ID) === String(item.idtask));
+              if (t && t.STATUS) status = t.STATUS;
+              else {
+                const dt = dynamicTasks[String(item.idtask)];
+                if (dt && typeof dt === 'object' && 'STATUS' in dt) status = dt.STATUS;
+                else if (dt === 'notfound') status = undefined;
+              }
+              let concluida = '';
+              if (status === '5') concluida = 'SIM';
+              else if (status) concluida = 'NÃO';
+              else if (status === undefined) concluida = 'Não encontrado no Bitrix';
+              else concluida = 'Buscando...';
+              return (
+                <tr key={item.idtask} className="border-b border-slate-100">
+                  <td className="px-6 py-4 text-sm font-bold">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-black text-slate-400">#{item.idtask}</span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-sm text-slate-700">{getNome(item.idtask)}</td>
+                  <td className="px-6 py-4 text-sm text-slate-600">
+                    <div className="flex items-center gap-2">
+                      <span className="w-7 h-7 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-700 shrink-0">
+                        <UserIcon size={14} />
+                      </span>
+                      <span>{getResponsavel(item.idtask)}</span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-sm font-bold text-rose-600">{item.prioridade ? 'SIM' : 'NÃO'}</td>
+                  <td className="px-6 py-4 text-sm font-bold text-slate-600">{item.dataprazofinal ? new Date(item.dataprazofinal).toLocaleDateString('pt-BR') : '--'}</td>
+                  <td className="px-6 py-4 text-sm text-slate-700">{item.comentario || '--'}</td>
+                  <td className="px-6 py-4 text-sm font-bold text-emerald-700">{concluida}</td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       )}
