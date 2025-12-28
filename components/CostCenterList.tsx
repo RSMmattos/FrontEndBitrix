@@ -1,3 +1,4 @@
+import { API_BASE_URL } from '../constants';
 import React, { useState, useEffect } from 'react';
 import { Loader2, AlertCircle, RefreshCw, ChevronRight, ChevronDown } from 'lucide-react';
 import { CostCenter } from '../types';
@@ -11,7 +12,7 @@ export const CostCenterList: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch('http://localhost:3000/api/gccusto');
+      const response = await fetch(`${API_BASE_URL}/api/gccusto`);
       if (!response.ok) {
         throw new Error('Erro ao carregar centros de custo');
       }

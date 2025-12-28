@@ -1,3 +1,4 @@
+import { API_BASE_URL } from '../constants';
 
 import React, { useEffect, useState } from 'react';
 import { GroupLink, CostCenter } from '../types';
@@ -21,8 +22,8 @@ export const VisaoGroupLinkList: React.FC = () => {
     setLoading(true);
     setError(null);
     Promise.all([
-      fetch('http://localhost:3000/api/bgcatividade').then(r => r.json()),
-      fetch('http://localhost:3000/api/gccusto').then(r => r.json()),
+      fetch(`${API_BASE_URL}/api/bgcatividade`).then(r => r.json()),
+      fetch(`${API_BASE_URL}/api/gccusto`).then(r => r.json()),
       fetch('https://agroserra.bitrix24.com.br/rest/187/wdalwcekbog0ke1r/sonet_group.get').then(r => r.json()).then(data => Array.isArray(data) ? data : data.result || [])
     ]).then(async ([links, centers, groups]) => {
       setGroupLinks(links);

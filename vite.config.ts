@@ -15,7 +15,7 @@ export default defineConfig(({ mode }) => {
             rewrite: (path) => path.replace(/^\/api\/bitrix-groups/, '/rest/187/wdalwcekbog0ke1r/sonet_group.get')
           },
           '/api/batividadeg': {
-            target: 'http://localhost:3000',
+            target: 'http://localhost:3001',
             changeOrigin: true,
             secure: false
           }
