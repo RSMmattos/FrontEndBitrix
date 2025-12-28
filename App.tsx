@@ -14,6 +14,7 @@ import { EditableTaskRow } from './components/EditableTaskRow';
 import { CostCenterList } from './components/CostCenterList';
 import { GroupLinkList } from './components/GroupLinkList';
 import { UsuariosOnline } from './components/UsuariosOnline';
+import { PerfilUsuario } from './components/PerfilUsuario';
 // import { VisaoGroupLinkList } from './components/VisaoGroupLinkList';
 // import { VisaoMatriz } from './components/VisaoMatriz';
 import { fetchTasks } from './services/bitrixService';
@@ -38,7 +39,7 @@ import { subDays, format } from 'date-fns';
 import { PrioritariasList } from './components/PrioritariasList';
 // import { Gestao } from './components/Gestao';
 
-type ActiveTab = 'dashboard' | 'activities' | 'cost-centers' | 'group-links' | 'bitrix-groups' | 'usuarios-online' | 'prioritarias' | 'consultas';
+type ActiveTab = 'dashboard' | 'activities' | 'cost-centers' | 'group-links' | 'bitrix-groups' | 'usuarios-online' | 'perfil-usuario' | 'prioritarias' | 'consultas';
 
 const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -234,6 +235,10 @@ const App: React.FC = () => {
           </div>
         </div>
         <nav className="flex-1 px-4 py-4 space-y-1">
+                    <button onClick={() => setActiveTab('perfil-usuario')} className={`flex items-center gap-4 w-full px-4 py-3 rounded-xl transition-all ${activeTab === 'perfil-usuario' ? 'bg-emerald-600/10 text-emerald-500' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}>
+                      <Users size={20} />
+                      {sidebarOpen && <span className="text-sm font-bold">Perfil do Usuário</span>}
+                    </button>
           <button onClick={() => setActiveTab('dashboard')} className={`flex items-center gap-4 w-full px-4 py-3 rounded-xl transition-all ${activeTab === 'dashboard' ? 'bg-emerald-600/10 text-emerald-500' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}>
             <LayoutDashboard size={20} />
             {sidebarOpen && <span className="text-sm font-bold">Dashboard</span>}
@@ -440,6 +445,8 @@ const App: React.FC = () => {
             <BitrixGroupList />
           ) : activeTab === 'usuarios-online' ? (
             <UsuariosOnline />
+          ) : activeTab === 'perfil-usuario' ? (
+            <PerfilUsuario idusuario={currentUser?.idusuario || currentUser?.codusuario || ''} />
           ) : activeTab === 'prioritarias' ? (
             <PrioritariasList tasks={tasks} />
           ) : (
@@ -454,7 +461,16 @@ const App: React.FC = () => {
                 <StatsCard title="Atrasadas" value={tasks.filter(t => t.DEADLINE && new Date(t.DEADLINE) < new Date() && t.STATUS !== '5').length} icon={AlertCircle} color="bg-orange-500" description="Tarefas vencidas e não finalizadas." />
                 <StatsCard title="Finalizadas" value={tasks.filter(t => t.STATUS === "5").length} icon={Save} color="bg-teal-500" description="Tarefas concluídas no período." />
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-white p-8 rounded-2xl border border-slate-100 shadow-sm flex flex-col items-center justify-center">
+                  <h3 className="text-base font-black text-slate-800 mb-4">Progresso das Tarefas</h3>
+                  <div className="w-full h-40 flex items-center justify-center">
+                    {/* Gráfico de progresso (placeholder) */}
+                    <div className="w-full h-32 bg-gradient-to-r from-emerald-400 to-emerald-200 rounded-xl flex items-center justify-center text-2xl font-black text-white shadow-inner">
+                      {((tasks.filter(t => t.STATUS === "5").length / (tasks.length || 1)) * 100).toFixed(0)}% Concluídas
+                    </div>
+                  </div>
+                </div>
                 <StatusSummary tasks={tasks} />
                 <div className="bg-white p-8 rounded-2xl border border-slate-100 shadow-sm space-y-4">
                   <h3 className="text-base font-black text-slate-800 mb-2">Tarefas Recentes</h3>

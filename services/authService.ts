@@ -15,8 +15,12 @@ export const login = async (username: string, password: string): Promise<User> =
     throw new Error(errorData.message || 'Credenciais inválidas.');
   }
   const data = await response.json();
-  const user = data.user || data;
-  console.log('Usuário retornado do login:', user);
+  let user = data.user || data;
+  // Garante que idusuario esteja presente e consistente
+  if (!user.idusuario) {
+    user.idusuario = user.ID || user.codusuario || user.id || user.id_usuario;
+  }
+  // Salva sempre o idusuario no localStorage
   localStorage.setItem(USER_INFO_KEY, JSON.stringify(user));
   return user;
 };
