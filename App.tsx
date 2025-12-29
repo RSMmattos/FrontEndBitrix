@@ -59,7 +59,7 @@ const App: React.FC = () => {
       const ensureAdminUser = async () => {
         try {
           // Busca todos os usuários
-          const res = await fetch('http://localhost:3001/api/usuario');
+          const res = await fetch(`${API_BASE_URL}/api/usuario`);
           if (res.ok) {
             const users = await res.json();
             if (Array.isArray(users) && users.some((u) => u.codusuario === 'admin')) {
@@ -67,7 +67,7 @@ const App: React.FC = () => {
             }
           }
           // Se não existe, cria
-          await fetch('http://localhost:3001/api/usuario', {
+          await fetch(`${API_BASE_URL}/api/usuario`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

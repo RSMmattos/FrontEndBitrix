@@ -1,7 +1,7 @@
 // Serviço para integração com a API batividadeg
 import axios from 'axios';
-
-const API_URL = '/api/batividadeg';
+import { API_BASE_URL } from '../constants';
+const API_URL = `${API_BASE_URL}/api/batividadeg`;
 
 export interface BAtividadeG {
   idtask: number;

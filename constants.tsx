@@ -1,6 +1,7 @@
-
 // URL base centralizada para as APIs do sistema
-export const API_BASE_URL = 'http://localhost:3001';
+//export const API_BASE_URL = 'http://localhost:3001';
+export const API_BASE_URL = 'http://10.0.0.6:3001';
+
 
 import React from 'react';
 import { TaskStatus, TaskPriority } from './types';
