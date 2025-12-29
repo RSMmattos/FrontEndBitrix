@@ -1,4 +1,16 @@
 import React, { useEffect, useState } from 'react';
+
+function formatarDataLogin(data: string) {
+  if (!data) return '';
+  const d = new Date(data);
+  if (isNaN(d.getTime())) return data;
+  const dia = String(d.getDate()).padStart(2, '0');
+  const mes = String(d.getMonth() + 1).padStart(2, '0');
+  const ano = d.getFullYear();
+  const hora = String(d.getHours()).padStart(2, '0');
+  const min = String(d.getMinutes()).padStart(2, '0');
+  return `${dia}/${mes}/${ano} ${hora}:${min}`;
+}
 import { Loader2, AlertCircle, Search } from 'lucide-react';
 
 interface Usuario {
@@ -131,7 +143,7 @@ export const UsuariosOnline: React.FC = () => {
                   <td className="px-4 py-2 text-sm">{user.CARGO}</td>
                   <td className={`px-4 py-2 text-sm text-center font-bold ${user.ONLINE === 'Online' ? 'text-green-700 bg-green-100' : 'text-gray-500 bg-gray-100'}`}>{user.ONLINE}</td>
                   <td className="px-4 py-2 text-sm">{user.TELEFONE}</td>
-                  <td className="px-4 py-2 text-sm">{user.ULTIMO_LOGIN}</td>
+                  <td className="px-4 py-2 text-sm">{formatarDataLogin(user.ULTIMO_LOGIN)}</td>
                 </tr>
               ))
             ) : (

@@ -3,7 +3,7 @@ import { BitrixTask } from '../types';
 
 // Ajustado para 16 caracteres (qpf9), que é o padrão de tokens do Bitrix24.
 // A URL anterior de 14 caracteres causava o erro 401 (Não Autorizado).
-const BASE_URL = 'https://agroserra.bitrix24.com.br/rest/77/1rbygnbdl3w9qpf9';
+const BASE_URL = 'https://agroserra.bitrix24.com.br/rest/77/1611kgqjihc2tsfy';
 
 export const fetchTasks = async (startDate?: string, endDate?: string): Promise<BitrixTask[]> => {
   let allTasks: any[] = [];

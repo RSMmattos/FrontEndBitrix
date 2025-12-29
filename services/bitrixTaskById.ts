@@ -1,7 +1,7 @@
 // Serviço para buscar uma tarefa específica do Bitrix24 pelo ID
 import { BitrixTask } from '../types';
 
-const BASE_URL = 'https://agroserra.bitrix24.com.br/rest/77/1rbygnbdl3w9qpf9';
+const BASE_URL = 'https://agroserra.bitrix24.com.br/rest/77/1611kgqjihc2tsfy';
 
 export const fetchBitrixTaskById = async (id: string | number): Promise<BitrixTask | null> => {
   try {
