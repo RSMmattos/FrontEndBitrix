@@ -48,11 +48,36 @@ export const GroupLinkList: React.FC<GroupLinkListProps> = ({ hideAddButton }) =
 	useEffect(() => { loadAll(); }, []);
 
 	// Salvar vínculo
+
 	const handleSave = async () => {
+		// Validação 1-para-1
+		const grupoSelecionado = formData.idtask ? parseInt(formData.idtask) : null;
+		const centroSelecionado = formData.codccusto;
+		// Se for novo vínculo
+		if (!editingLink) {
+			if (groupLinks.some(link => link.codccusto === centroSelecionado)) {
+				setError('Este Centro de Custo já está vinculado a um Grupo.');
+				return;
+			}
+			if (groupLinks.some(link => link.idgrupobitrix === grupoSelecionado)) {
+				setError('Este Grupo já está vinculado a um Centro de Custo.');
+				return;
+			}
+		} else {
+			// Se for edição, permitir manter o mesmo vínculo, mas não permitir duplicidade
+			if (groupLinks.some(link => link.codccusto === centroSelecionado && link.codccusto !== editingLink.codccusto)) {
+				setError('Este Centro de Custo já está vinculado a um Grupo.');
+				return;
+			}
+			if (groupLinks.some(link => link.idgrupobitrix === grupoSelecionado && link.codccusto !== editingLink.codccusto)) {
+				setError('Este Grupo já está vinculado a um Centro de Custo.');
+				return;
+			}
+		}
 		try {
 			const payload = {
 				codccusto: formData.codccusto,
-				idgrupobitrix: formData.idtask ? parseInt(formData.idtask) : null
+				idgrupobitrix: grupoSelecionado
 			};
 			const url = editingLink
 				? `${API_BASE_URL}/api/bgcatividade/${editingLink.codccusto}`
