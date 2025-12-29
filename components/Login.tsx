@@ -45,7 +45,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
             </div>
             <div>
               <h1 className="text-4xl font-black text-white tracking-tighter mb-2">AGROSERRA</h1>
-              <p className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.3em]">Painel Operacional</p>
+              <p className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.3em]">Acompanhamento Operacional Bitrix</p>
             </div>
           </div>
 
@@ -94,7 +94,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
 
           <div className="mt-12 flex items-center justify-center gap-2 text-slate-600">
             <Shield size={12} />
-            <span className="text-[8px] font-black uppercase tracking-widest">Sistemas Internos Agroserra S.A.</span>
+            <span className="text-[8px] font-black uppercase tracking-widest">Agroserra Bitrix</span>
           </div>
         </div>
       </div>
