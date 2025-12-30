@@ -33,6 +33,7 @@ const VariaveisTable: React.FC<VariaveisTableProps> = ({ ano }) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalGrupoId, setModalGrupoId] = useState<number | null>(null);
   const [modalGrupoNome, setModalGrupoNome] = useState<string>('');
+  const [modalMes, setModalMes] = useState<string | null>(null);
 
   useEffect(() => {
     setLoading(true);
@@ -102,6 +103,7 @@ const VariaveisTable: React.FC<VariaveisTableProps> = ({ ano }) => {
                       onClick={() => {
                         setModalGrupoId(idGrupo);
                         setModalGrupoNome(nomeGrupo);
+                        setModalMes(null);
                         setModalOpen(true);
                       }}
                       disabled={!idGrupo || !row.total_registros}
@@ -110,7 +112,21 @@ const VariaveisTable: React.FC<VariaveisTableProps> = ({ ano }) => {
                     </button>
                   </td>
                   {dynamicColumns.map((col) => (
-                    <td key={col} className="px-4 py-3 text-sm text-center">{row[col]}</td>
+                    <td key={col} className="px-4 py-3 text-sm text-center">
+                      <button
+                        className={typeof row[col] === 'number' && row[col] > 0 ? 'text-emerald-700 underline hover:text-emerald-900' : ''}
+                        style={{ cursor: typeof row[col] === 'number' && row[col] > 0 ? 'pointer' : 'default', background: 'none', border: 'none', padding: 0 }}
+                        disabled={!(typeof row[col] === 'number' && row[col] > 0)}
+                        onClick={() => {
+                          setModalGrupoId(idGrupo);
+                          setModalGrupoNome(nomeGrupo);
+                          setModalMes(col);
+                          setModalOpen(true);
+                        }}
+                      >
+                        {row[col]}
+                      </button>
+                    </td>
                   ))}
                 </tr>
               );
@@ -123,6 +139,8 @@ const VariaveisTable: React.FC<VariaveisTableProps> = ({ ano }) => {
         onClose={() => setModalOpen(false)}
         idgrupobitrix={modalGrupoId}
         grupoNome={modalGrupoNome}
+        mes={modalMes}
+        contexto={modalMes ? 'programadas' : undefined}
       />
     </>
   );
