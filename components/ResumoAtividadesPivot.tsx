@@ -60,20 +60,22 @@ export const ResumoAtividadesPivot: React.FC = () => {
   const saldoAcumulado: Record<string, Record<string, number>> = {};
   if (data && data.registros && dataConclusao && dataConclusao.registros) {
     // Agrupa por grupo
-    const gruposIds = Array.from(new Set(data.registros.map((r: any) => r.idgrupobitrix)));
+    const gruposIds = Array.from(new Set(data.registros.map((r: any) => String(r.idgrupobitrix))));
     gruposIds.forEach((gid) => {
-      saldoAcumulado[gid] = {};
+      const gidStr = String(gid);
+      saldoAcumulado[gidStr] = {};
       let saldoAnterior = 0;
       meses.forEach((mes) => {
+        const mesStr = String(mes);
         // Atividades programadas para o mês
-        const reg = data.registros.find((r: any) => r.idgrupobitrix === gid);
-        const programadas = reg && reg[mes] ? Number(reg[mes]) : 0;
+        const reg = data.registros.find((r: any) => String(r.idgrupobitrix) === gidStr);
+        const programadas = reg && reg[mesStr] ? Number(reg[mesStr]) : 0;
         // Atividades concluídas no mês (com dataconclusao dentro do mês)
-        const regConcl = dataConclusao.registros.find((r: any) => r.idgrupobitrix === gid);
-        const concluidas = regConcl && regConcl[mes] ? Number(regConcl[mes]) : 0;
+        const regConcl = dataConclusao.registros.find((r: any) => String(r.idgrupobitrix) === gidStr);
+        const concluidas = regConcl && regConcl[mesStr] ? Number(regConcl[mesStr]) : 0;
         // Saldo acumulado: saldo anterior + programadas - concluídas
-        saldoAcumulado[gid][mes] = saldoAnterior + programadas - concluidas;
-        saldoAnterior = saldoAcumulado[gid][mes];
+        saldoAcumulado[gidStr][mesStr] = saldoAnterior + programadas - concluidas;
+        saldoAnterior = saldoAcumulado[gidStr][mesStr];
       });
     });
   }
@@ -82,15 +84,17 @@ export const ResumoAtividadesPivot: React.FC = () => {
   // Estrutura: { [idgrupobitrix]: { [mes]: percentual } }
   const percentualExecucao: Record<string, Record<string, number>> = {};
   if (data && data.registros && dataConclusao && dataConclusao.registros) {
-    const gruposIds = Array.from(new Set(data.registros.map((r: any) => r.idgrupobitrix)));
+    const gruposIds = Array.from(new Set(data.registros.map((r: any) => String(r.idgrupobitrix))));
     gruposIds.forEach((gid) => {
-      percentualExecucao[gid] = {};
+      const gidStr = String(gid);
+      percentualExecucao[gidStr] = {};
       meses.forEach((mes) => {
-        const saldo = saldoAcumulado[gid]?.[mes] ?? 0;
-        const regConcl = dataConclusao.registros.find((r: any) => r.idgrupobitrix === gid);
-        const executada = regConcl && regConcl[mes] ? Number(regConcl[mes]) : 0;
+        const mesStr = String(mes);
+        const saldo = saldoAcumulado[gidStr]?.[mesStr] ?? 0;
+        const regConcl = dataConclusao.registros.find((r: any) => String(r.idgrupobitrix) === gidStr);
+        const executada = regConcl && regConcl[mesStr] ? Number(regConcl[mesStr]) : 0;
         const denominador = saldo + executada;
-        percentualExecucao[gid][mes] = denominador === 0 ? 0 : (executada / denominador) * 100;
+        percentualExecucao[gidStr][mesStr] = denominador === 0 ? 0 : (executada / denominador) * 100;
       });
     });
   }

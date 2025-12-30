@@ -39,9 +39,11 @@ import {
 import { subDays, format } from 'date-fns';
 import { PrioritariasList } from './components/PrioritariasList';
 import { ResumoAtividadesPivot } from './components/ResumoAtividadesPivot';
+import VariaveisPage from './VariaveisPage';
 // import { Gestao } from './components/Gestao';
 
-type ActiveTab = 'dashboard' | 'activities' | 'cost-centers' | 'group-links' | 'bitrix-groups' | 'usuarios-online' | 'perfil-usuario' | 'prioritarias' | 'consultas' | 'resumo-atividades';
+type ActiveTab = 'dashboard' | 'activities' | 'cost-centers' | 'group-links' | 'bitrix-groups' | 'usuarios-online' | 'perfil-usuario' | 'prioritarias' | 'consultas' | 'resumo-atividades' | 'variaveis';
+
 
 const App: React.FC = () => {
     // Usuários online para exibir no topo
@@ -292,6 +294,10 @@ const App: React.FC = () => {
             <LayoutDashboard size={20} />
             {sidebarOpen && <span className="text-sm font-bold">Resumo Atividades</span>}
           </button>
+          <button onClick={() => setActiveTab('variaveis')} className={`flex items-center gap-4 w-full px-4 py-3 rounded-xl transition-all ${activeTab === 'variaveis' ? 'bg-emerald-600/10 text-emerald-500' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}>
+            <Layers size={20} />
+            {sidebarOpen && <span className="text-sm font-bold">Variáveis</span>}
+          </button>
         </nav>
         <div className="p-4 border-t border-white/5">
           <button onClick={logout} className="flex items-center gap-4 w-full px-4 py-3 text-rose-500 hover:bg-rose-500/10 rounded-xl font-bold transition-all">
@@ -478,6 +484,8 @@ const App: React.FC = () => {
             <PrioritariasList tasks={tasks} />
           ) : activeTab === 'resumo-atividades' ? (
             <ResumoAtividadesPivot />
+          ) : activeTab === 'variaveis' ? (
+            <VariaveisPage />
           ) : (
 
 
