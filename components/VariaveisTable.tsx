@@ -11,6 +11,7 @@ async function fetchBitrixGroups(): Promise<any[]> {
 }
 import axios from 'axios';
 import { API_BASE_URL } from '../constants';
+import DetalhesAtividadesModal from './DetalhesAtividadesModal';
 
 interface VariavelRegistro {
   [key: string]: string | number | null;
@@ -24,12 +25,14 @@ interface VariaveisTableProps {
   ano: number;
 }
 
-
 const VariaveisTable: React.FC<VariaveisTableProps> = ({ ano }) => {
   const [data, setData] = useState<VariaveisResponse | null | any[]>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [bitrixGroups, setBitrixGroups] = useState<any[]>([]);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalGrupoId, setModalGrupoId] = useState<number | null>(null);
+  const [modalGrupoNome, setModalGrupoNome] = useState<string>('');
 
   useEffect(() => {
     setLoading(true);
@@ -69,39 +72,59 @@ const VariaveisTable: React.FC<VariaveisTableProps> = ({ ano }) => {
   );
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-x-auto">
-      <table className="w-full text-left">
-        <thead className="bg-gray-50">
-          <tr>
-            <th className="px-4 py-3 text-xs font-bold text-gray-500 uppercase">Centro de Custo</th>
-            <th className="px-4 py-3 text-xs font-bold text-gray-500 uppercase">Grupo Bitrix</th>
-            <th className="px-4 py-3 text-xs font-bold text-gray-500 uppercase">Total</th>
-            {dynamicColumns.map((col) => (
-              <th key={col} className="px-4 py-3 text-xs font-bold text-gray-500 uppercase">{col}</th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {registros.map((row, idx) => {
-            const idGrupo = Number(row.idgrupobitrix);
-            const bitrixGroup = Array.isArray(bitrixGroups)
-              ? bitrixGroups.find(bg => bg && Number(bg.ID) === idGrupo)
-              : undefined;
-            const nomeGrupo = bitrixGroup?.NAME || '';
-            return (
-              <tr key={idx} className="border-t hover:bg-gray-50 align-top">
-                <td className="px-4 py-3 text-sm">{row.codccusto_nome}</td>
-                <td className="px-4 py-3 text-sm">{nomeGrupo ? `${idGrupo} - ${nomeGrupo}` : `Grupo não encontrado (ID: ${idGrupo})`}</td>
-                <td className="px-4 py-3 text-sm text-center font-bold">{row.total_registros}</td>
-                {dynamicColumns.map((col) => (
-                  <td key={col} className="px-4 py-3 text-sm text-center">{row[col]}</td>
-                ))}
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </div>
+    <>
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-x-auto">
+        <table className="w-full text-left">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-4 py-3 text-xs font-bold text-gray-500 uppercase">Centro de Custo</th>
+              <th className="px-4 py-3 text-xs font-bold text-gray-500 uppercase">Grupo Bitrix</th>
+              <th className="px-4 py-3 text-xs font-bold text-gray-500 uppercase">Total</th>
+              {dynamicColumns.map((col) => (
+                <th key={col} className="px-4 py-3 text-xs font-bold text-gray-500 uppercase">{col}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {registros.map((row, idx) => {
+              const idGrupo = Number(row.idgrupobitrix);
+              const bitrixGroup = Array.isArray(bitrixGroups)
+                ? bitrixGroups.find(bg => bg && Number(bg.ID) === idGrupo)
+                : undefined;
+              const nomeGrupo = bitrixGroup?.NAME || '';
+              return (
+                <tr key={idx} className="border-t hover:bg-gray-50 align-top">
+                  <td className="px-4 py-3 text-sm">{row.codccusto_nome}</td>
+                  <td className="px-4 py-3 text-sm">{nomeGrupo ? `${idGrupo} - ${nomeGrupo}` : `Grupo não encontrado (ID: ${idGrupo})`}</td>
+                  <td className="px-4 py-3 text-sm text-center font-bold">
+                    <button
+                      className="text-emerald-700 underline hover:text-emerald-900"
+                      onClick={() => {
+                        setModalGrupoId(idGrupo);
+                        setModalGrupoNome(nomeGrupo);
+                        setModalOpen(true);
+                      }}
+                      disabled={!idGrupo || !row.total_registros}
+                    >
+                      {row.total_registros}
+                    </button>
+                  </td>
+                  {dynamicColumns.map((col) => (
+                    <td key={col} className="px-4 py-3 text-sm text-center">{row[col]}</td>
+                  ))}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+      <DetalhesAtividadesModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        idgrupobitrix={modalGrupoId}
+        grupoNome={modalGrupoNome}
+      />
+    </>
   );
 };
 
