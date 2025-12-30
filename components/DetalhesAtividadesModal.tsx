@@ -8,9 +8,10 @@ interface DetalhesAtividadesModalProps {
   grupoNome?: string;
   mes?: string | null;
   contexto?: 'programadas' | 'executadas' | 'saldo';
+  apiModal?: string;
 }
 
-const DetalhesAtividadesModal: React.FC<DetalhesAtividadesModalProps> = ({ open, onClose, idgrupobitrix, grupoNome, mes, contexto }) => {
+const DetalhesAtividadesModal: React.FC<DetalhesAtividadesModalProps> = ({ open, onClose, idgrupobitrix, grupoNome, mes, contexto, apiModal }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [registros, setRegistros] = useState<any[]>([]);
@@ -21,10 +22,11 @@ const DetalhesAtividadesModal: React.FC<DetalhesAtividadesModalProps> = ({ open,
     setLoading(true);
     setError(null);
     // Busca atividades do grupo
-    fetch(`${API_BASE_URL}/api/batividadeg/grupo/${idgrupobitrix}`)
+    const url = apiModal ? (apiModal.includes('://') ? apiModal : `${API_BASE_URL}${apiModal}`) : `${API_BASE_URL}/api/batividadeg/grupo/${idgrupobitrix}`;
+    fetch(url)
       .then(res => res.json())
       .then(async json => {
-        let regs = json.registros || [];
+        let regs = json.registros || json.atividades || [];
         if (mes && contexto === 'programadas') {
           // Mostrar apenas atividades programadas para o mês selecionado
           regs = regs.filter((r: any) => {
