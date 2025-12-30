@@ -69,17 +69,23 @@ export const VisaoGroupLinkList: React.FC = () => {
           {groupLinks.map(link => {
             const costCenter = costCenters.find(cc => cc.codccusto === link.codccusto);
             // Compatível com ambos os campos: id_grupo (novo) ou idgrupobitrix (antigo)
-            const idGrupoStr = (link.id_grupo ?? link.idgrupobitrix)?.toString?.() ?? String(link.id_grupo ?? link.idgrupobitrix);
-            const bitrixGroup = Array.isArray(bitrixGroups) ? bitrixGroups.find(bg => bg && (bg.ID?.toString?.() === idGrupoStr)) : undefined;
+            const idGrupo = Number(link.id_grupo ?? link.idgrupobitrix);
+            const bitrixGroup = Array.isArray(bitrixGroups)
+              ? bitrixGroups.find(bg => bg && Number(bg.ID) === idGrupo)
+              : undefined;
+            const nomeGrupo = bitrixGroup?.NAME || '';
+            // Exibir no formato '<idGrupo> - <nomeGrupo>' (sem SUP duplicado)
+            let nomeFormatado = nomeGrupo;
+            if (/^SUP\s*-?\s*/i.test(nomeGrupo)) {
+              nomeFormatado = nomeGrupo.replace(/^SUP\s*-?\s*/i, '');
+            }
             return (
               <tr key={link.codccusto} className="border-t hover:bg-gray-50">
                 <td className="px-6 py-4 text-sm">{link.codccusto}</td>
                 <td className="px-6 py-4 text-sm">{costCenter?.nome || '-'}</td>
-                <td className="px-6 py-4 text-sm">{idGrupoStr}</td>
+                <td className="px-6 py-4 text-sm">{idGrupo}</td>
                 <td className="px-6 py-4 text-sm">
-                  {bitrixGroup?.NAME
-                    ? `${bitrixGroup.NAME} (ID: ${bitrixGroup.ID})`
-                    : `Grupo não encontrado (ID: ${idGrupoStr})`}
+                  {nomeGrupo ? `${idGrupo} - ${nomeFormatado}` : `Grupo não encontrado (ID: ${idGrupo})`}
                 </td>
                 <td className="px-6 py-4 text-sm text-center font-bold">{taskCounts[link.id_grupo ?? link.idgrupobitrix] ?? 0}</td>
               </tr>
