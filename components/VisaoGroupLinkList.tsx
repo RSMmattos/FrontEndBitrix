@@ -14,7 +14,7 @@ export const VisaoGroupLinkList: React.FC = () => {
   const [taskCounts, setTaskCounts] = useState<Record<number, number>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  // Mesmo range de datas da Tabela Atividades (últimos 30 dias)
+  // Mesmo range de datas da Atividades (últimos 30 dias)
   const dateFrom = format(subDays(new Date(), 30), 'yyyy-MM-dd');
   const dateTo = format(new Date(), 'yyyy-MM-dd');
 

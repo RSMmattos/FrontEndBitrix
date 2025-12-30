@@ -263,7 +263,7 @@ const App: React.FC = () => {
           </button>
           <button onClick={() => setActiveTab('activities')} className={`flex items-center gap-4 w-full px-4 py-3 rounded-xl transition-all ${activeTab === 'activities' ? 'bg-emerald-600/10 text-emerald-500' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}>
             <ListTodo size={20} />
-            {sidebarOpen && <span className="text-sm font-bold">Tabela Atividades</span>}
+            {sidebarOpen && <span className="text-sm font-bold">Atividades</span>}
           </button>
           <button onClick={() => setActiveTab('prioritarias')} className={`flex items-center gap-4 w-full px-4 py-3 rounded-xl transition-all ${activeTab === 'prioritarias' ? 'bg-rose-600/10 text-rose-500' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}>
             <AlertCircle size={20} />
@@ -351,7 +351,7 @@ const App: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-black text-emerald-700 tracking-tighter">Gestão Operacional Bitrix</h1>
-              <p className="text-slate-500 text-sm font-medium">Visualização dinâmica de tarefas por período de criação.</p>
+              <p className="text-slate-500 text-sm font-medium">Programação de atividades</p>
             </div>
             
             <div className="flex items-center gap-3 bg-white border border-slate-200 p-2 rounded-2xl shadow-sm">
