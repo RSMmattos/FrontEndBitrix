@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import VariaveisTable from './components/VariaveisTable';
 import ExecutadasTable from './components/ExecutadasTable';
 import AcumuladasTable from './components/AcumuladasTable';
+import PorcentagemExecucaoTable from './components/PorcentagemExecucaoTable';
 
 const VariaveisPage: React.FC = () => {
   const [ano, setAno] = useState<number>(new Date().getFullYear());
-  const [tab, setTab] = useState<'programadas' | 'executadas' | 'acumuladas'>('programadas');
+  const [tab, setTab] = useState<'programadas' | 'executadas' | 'acumuladas' | 'porcentagem'>('programadas');
   return (
     <div className="p-6">
       <div className="flex items-center mb-4">
@@ -38,7 +39,19 @@ const VariaveisPage: React.FC = () => {
         >
           Acumuladas
         </button>
+        <button
+          className={`px-4 py-2 font-bold border-b-2 transition-colors ${tab === 'porcentagem' ? 'border-emerald-600 text-emerald-700' : 'border-transparent text-gray-500 hover:text-emerald-700'}`}
+          onClick={() => setTab('porcentagem')}
+        >
+          % Execução
+        </button>
       </div>
+            {tab === 'porcentagem' && (
+              <>
+                <h1 className="text-2xl font-black text-slate-900 mb-4">% Execução</h1>
+                <PorcentagemExecucaoTable ano={ano} />
+              </>
+            )}
       {tab === 'programadas' && (
         <>
           <h1 className="text-2xl font-black text-slate-900 mb-4">Programadas</h1>
