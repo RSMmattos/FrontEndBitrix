@@ -60,6 +60,9 @@ export const fetchTasks = async (startDate?: string, endDate?: string): Promise<
       const isFilha = parentId !== "0" && parentId !== "";
       const isMae = parentIds.has(id);
       
+      let idgrupobitrix = undefined;
+      if (t.groupId !== undefined) idgrupobitrix = Number(t.groupId);
+      else if (t.GROUP_ID !== undefined) idgrupobitrix = Number(t.GROUP_ID);
       return {
         ID: id,
         TITLE: String(t.title || t.TITLE),
@@ -73,6 +76,7 @@ export const fetchTasks = async (startDate?: string, endDate?: string): Promise<
         STATUS: String(t.status || t.STATUS),
         PARENT_ID: isFilha ? parentId : null,
         GROUP_NAME: (t.group?.name || t.GROUP_NAME) || "Geral",
+        idgrupobitrix,
         AUDITORS: t.auditorsData ? Object.values(t.auditorsData).map((a: any) => a.name) : [],
         TASK_TYPE: isFilha ? 'FILHA' : (isMae ? 'MÃE' : 'NORMAL')
       };

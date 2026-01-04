@@ -5,6 +5,7 @@ const API_URL = `${API_BASE_URL}/api/batividadeg`;
 
 export interface BAtividadeG {
   idtask: number;
+  idgrupobitrix?: number; // ID do grupo Bitrix vinculado à tarefa
   comentario?: string;
   prioridade?: boolean;
   dataprazofinal?: string;

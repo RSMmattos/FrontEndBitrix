@@ -160,9 +160,20 @@ const App: React.FC = () => {
         }
         // Salva na batividadeg se necessário
         const batividadegFields: any = {};
-        if ('batividadeg_prioridade' in changes) batividadegFields.prioridade = changes.batividadeg_prioridade;
+        // Busca taskObj uma vez para usar em todos os campos
+        const taskObj = tasks.find(t => t.ID === id);
+        // Garante que prioridade seja sempre 0 (NÃO) se não alterado
+        if ('batividadeg_prioridade' in changes) {
+          batividadegFields.prioridade = changes.batividadeg_prioridade;
+        } else {
+          batividadegFields.prioridade = (taskObj && typeof taskObj.batividadeg_prioridade !== 'undefined') ? taskObj.batividadeg_prioridade : false;
+        }
         if ('batividadeg_comentario' in changes) batividadegFields.comentario = changes.batividadeg_comentario;
         if ('batividadeg_dataprazofinal' in changes) batividadegFields.dataprazofinal = changes.batividadeg_dataprazofinal;
+        // Garante que idgrupobitrix será enviado
+        if (taskObj && typeof taskObj.idgrupobitrix !== 'undefined') {
+          batividadegFields.idgrupobitrix = taskObj.idgrupobitrix;
+        }
         if (Object.keys(batividadegFields).length > 0) {
           try {
             await updateBAtividadeG(Number(id), batividadegFields);

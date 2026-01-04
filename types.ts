@@ -15,6 +15,7 @@ export interface BitrixTask {
   AUDITORS?: string[]; // Nomes dos observadores
   TASK_TYPE?: 'MÃE' | 'FILHA' | 'NORMAL';
   COMMENT?: string; 
+  idgrupobitrix?: number;
   // Campos extras da integração batividadeg
   batividadeg_prioridade?: boolean;
   batividadeg_comentario?: string;

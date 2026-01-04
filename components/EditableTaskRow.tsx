@@ -65,6 +65,9 @@ export const EditableTaskRow: React.FC<EditableTaskRowProps> = ({
               {task.TASK_TYPE}
             </span>
             <span className="text-[8px] text-slate-400 font-bold uppercase">{task.GROUP_NAME}</span>
+            {typeof task.idgrupobitrix !== 'undefined' && (
+              <span className="text-[8px] text-emerald-700 font-bold ml-2">[{task.idgrupobitrix}]</span>
+            )}
           </div>
         </div>
       </td>
