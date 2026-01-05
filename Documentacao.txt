@@ -1,0 +1,39 @@
+# Dados de Usuário do Servidor
+usuario: ssh rmatos@10.0.0.6
+senha: Agro123@
+
+============================================
+# Documentação de Deploy do Contêiner FrontEndBitrix
+
+## Caminho do Projeto
+cd /var/www/FrontEndBitrix
+
+## Atualizar o código do Git
+```
+git pull origin main
+```
+
+## Parar o contêiner atual
+```
+docker stop frontendbitrix
+```
+
+## Remover o contêiner antigo
+```
+docker rm frontendbitrix
+```
+
+## Construir a imagem novamente (sem cache)
+```
+docker build --no-cache -t frontendbitrix:latest .
+```
+
+## Subir o novo contêiner
+```
+docker run -d -p 4001:80 --name frontendbitrix frontendbitrix:latest
+```
+
+## Conferir se o contêiner está rodando
+```
+docker ps
+```

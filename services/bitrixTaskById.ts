@@ -1,22 +1,29 @@
 // Serviço para buscar uma tarefa específica do Bitrix24 pelo ID
 import { BitrixTask } from '../types';
 
-const BASE_URL = 'https://agroserra.bitrix24.com.br/rest/77/1611kgqjihc2tsfy';
+// const BASE_URL = 'https://agroserra.bitrix24.com.br/rest/77/1611kgqjihc2tsfy';
+const BASE_URL = 'http://10.0.0.6:3001/api';
 
 export const fetchBitrixTaskById = async (id: string | number): Promise<BitrixTask | null> => {
   try {
-    const response = await fetch(`${BASE_URL}/tasks.task.get`, {
+    const response = await fetch(`${BASE_URL}/bitrix-task`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        taskId: String(id),
-        select: ["ID", "TITLE", "RESPONSIBLE_ID", "RESPONSIBLE_NAME", "STATUS"]
+        taskId: String(id)
       })
     });
-    if (!response.ok) return null;
+    if (!response.ok) {
+      console.error('Bitrix API response not ok:', response.status, response.statusText);
+      return null;
+    }
     const data = await response.json();
+    console.log('Bitrix API response for taskId', id, data);
     const t = data.result?.task;
-    if (!t) return null;
+    if (!t) {
+      console.warn('Bitrix API: task not found in response for id', id, data);
+      return null;
+    }
     return {
       ID: String(t.id || t.ID),
       TITLE: String(t.title || t.TITLE),
@@ -33,7 +40,8 @@ export const fetchBitrixTaskById = async (id: string | number): Promise<BitrixTa
       AUDITORS: [],
       TASK_TYPE: undefined,
     };
-  } catch {
+  } catch (err) {
+    console.error('Erro ao buscar tarefa no Bitrix:', err);
     return null;
   }
 };

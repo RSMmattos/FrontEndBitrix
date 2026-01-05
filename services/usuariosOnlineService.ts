@@ -5,22 +5,18 @@ export interface UsuarioOnline {
   ONLINE: string;
 }
 
+import { fetchBitrixUsers } from './bitrixUsersService';
+
 export const fetchUsuariosOnline = async (): Promise<UsuarioOnline[]> => {
   let allUsers: UsuarioOnline[] = [];
   let start = 0;
   while (true) {
-    const params = new URLSearchParams({
+    const params = {
       start: start.toString(),
       SORT: 'NAME',
       order: 'ASC',
-    });
-    const response = await fetch('https://agroserra.bitrix24.com.br/rest/215/tvr0gkuvjdkc2oxn/user.get', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: params.toString(),
-    });
-    if (!response.ok) break;
-    const json = await response.json();
+    };
+    const json = await fetchBitrixUsers(params);
     const usuarios = json.result || [];
     for (const user of usuarios) {
       allUsers.push({

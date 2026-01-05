@@ -8,22 +8,27 @@ interface PrioritariasListProps {
 }
 
 export const PrioritariasList: React.FC<PrioritariasListProps> = ({ tasks }) => {
-    // Estado para armazenar tasks buscadas dinamicamente
-    const [dynamicTasks, setDynamicTasks] = useState<{[id: string]: {TITLE: string, RESPONSIBLE_NAME: string} | 'notfound'}>({});
+    // Estado para armazenar tasks buscadas dinamicamente (completo)
+    const [tasksMap, setTasksMap] = useState<Record<string, any>>({});
 
   const [dados, setDados] = useState<BAtividadeG[]>([]);
   const [loading, setLoading] = useState(true);
   const [consulta, setConsulta] = useState("");
-  const hojeStr = (() => {
-    const hoje = new Date();
-    const yyyy = hoje.getFullYear();
-    const mm = String(hoje.getMonth() + 1).padStart(2, '0');
-    const dd = String(hoje.getDate()).padStart(2, '0');
-    return `${yyyy}-${mm}-${dd}`;
-  })();
-  const [dataInicial, setDataInicial] = useState(hojeStr);
+  const hoje = new Date();
+  const yyyy = hoje.getFullYear();
+  const mm = String(hoje.getMonth() + 1).padStart(2, '0');
+  const dd = String(hoje.getDate()).padStart(2, '0');
+  const hojeStr = `${yyyy}-${mm}-${dd}`;
+  // Data inicial: 1 mês atrás
+  const umMesAtras = new Date(hoje);
+  umMesAtras.setMonth(umMesAtras.getMonth() - 1);
+  const yyyyIni = umMesAtras.getFullYear();
+  const mmIni = String(umMesAtras.getMonth() + 1).padStart(2, '0');
+  const ddIni = String(umMesAtras.getDate()).padStart(2, '0');
+  const umMesAtrasStr = `${yyyyIni}-${mmIni}-${ddIni}`;
+  const [dataInicial, setDataInicial] = useState(umMesAtrasStr);
   const [dataFinal, setDataFinal] = useState(hojeStr);
-  const [filtro, setFiltro] = useState({ consulta: "", dataInicial: hojeStr, dataFinal: hojeStr });
+  const [filtro, setFiltro] = useState({ consulta: "", dataInicial: umMesAtrasStr, dataFinal: hojeStr });
   useEffect(() => {
     fetchBAtividadeG().then(res => {
       setDados(res);
@@ -31,35 +36,20 @@ export const PrioritariasList: React.FC<PrioritariasListProps> = ({ tasks }) => 
     });
   }, []);
 
-  // Função para buscar descrição pelo idtask
-  // Busca task do Bitrix pela API se não encontrar localmente
-  // Busca task do Bitrix24 pelo webhook, sem limitação de 50
+  // Função para buscar task completa do Bitrix
   const fetchTaskById = async (idtask: number | string) => {
     const task = await fetchBitrixTaskById(idtask);
-    if (task) {
-      return {
-        TITLE: task.TITLE || 'Sem título',
-        RESPONSIBLE_NAME: task.RESPONSIBLE_NAME || 'Sem responsável',
-        STATUS: task.STATUS || ''
-      };
-    }
-    return null;
+    return task || null;
   };
 
   const getNome = (idtask: number | string) => {
-    const t = tasks.find(tk => String(tk.ID) === String(idtask));
-    if (t && t.TITLE) return t.TITLE;
-    const dt = dynamicTasks[String(idtask)];
-    if (dt === 'notfound') return 'Não encontrado no Bitrix';
-    if (dt) return dt.TITLE;
+    const t = tasksMap[String(idtask)];
+    if (t && (t.TITLE || t.title)) return t.TITLE || t.title;
     return 'Buscando...';
   };
   const getResponsavel = (idtask: number | string) => {
-    const t = tasks.find(tk => String(tk.ID) === String(idtask));
-    if (t && t.RESPONSIBLE_NAME) return t.RESPONSIBLE_NAME;
-    const dt = dynamicTasks[String(idtask)];
-    if (dt === 'notfound') return 'Não encontrado no Bitrix';
-    if (dt) return dt.RESPONSIBLE_NAME;
+    const t = tasksMap[String(idtask)];
+    if (t && (t.RESPONSIBLE_NAME || (t.responsible && t.responsible.name))) return t.RESPONSIBLE_NAME || t.responsible?.name;
     return 'Buscando...';
   };
 
@@ -67,29 +57,21 @@ export const PrioritariasList: React.FC<PrioritariasListProps> = ({ tasks }) => 
   useEffect(() => {
     const idsFaltando = dados
       .map(d => String(d.idtask))
-      .filter(id => !tasks.find(tk => String(tk.ID) === id) && !dynamicTasks[id]);
+      .filter(id => !tasksMap[id]);
     if (idsFaltando.length > 0) {
-      // Limitar buscas simultâneas para evitar bloqueio/lentidão
-      const maxSimultaneous = 5;
-      let running = 0;
-      let queue = [...idsFaltando];
-      const processQueue = () => {
-        while (running < maxSimultaneous && queue.length > 0) {
-          const id = queue.shift();
-          if (!id) continue;
-          running++;
-          fetchTaskById(id).then(task => {
-            setDynamicTasks(prev => ({ ...prev, [id]: task || 'notfound' }));
-          }).finally(() => {
-            running--;
-            processQueue();
-          });
+      // Limitar buscas para evitar bloqueio/lentidão (Bitrix QUERY_LIMIT_EXCEEDED)
+      const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
+      const processSequential = async () => {
+        for (const id of idsFaltando) {
+          const task = await fetchTaskById(id);
+          setTasksMap(prev => ({ ...prev, [id]: task || {} }));
+          await delay(500); // 500ms entre cada requisição
         }
       };
-      processQueue();
+      processSequential();
     }
     // eslint-disable-next-line
-  }, [dados, tasks]);
+  }, [dados]);
 
   // Filtrar dados apenas ao clicar no botão FILTRAR
   const [dadosFiltrados, setDadosFiltrados] = useState<BAtividadeG[]>([]);
@@ -123,11 +105,12 @@ export const PrioritariasList: React.FC<PrioritariasListProps> = ({ tasks }) => 
     setFiltro({ consulta, dataInicial, dataFinal });
   }, [consulta, dataInicial, dataFinal]);
 
-  // Aplica filtro inicial ao carregar dados
+
+  // Aplica filtro sempre que dados mudar (edição, carregamento, etc)
   useEffect(() => {
     if (!loading) aplicarFiltro();
     // eslint-disable-next-line
-  }, [loading]);
+  }, [loading, dados]);
 
   // Estado para edição da data de conclusão
   const [editandoId, setEditandoId] = useState<number | null>(null);
@@ -178,13 +161,8 @@ export const PrioritariasList: React.FC<PrioritariasListProps> = ({ tasks }) => 
             {dadosFiltrados.map((item) => {
               // Função para obter STATUS da task
               let status: string | undefined = undefined;
-              const t = tasks.find(tk => String(tk.ID) === String(item.idtask));
-              if (t && t.STATUS) status = t.STATUS;
-              else {
-                const dt = dynamicTasks[String(item.idtask)];
-                if (dt && typeof dt === 'object' && 'STATUS' in dt) status = dt.STATUS;
-                else if (dt === 'notfound') status = undefined;
-              }
+              const t = tasksMap[String(item.idtask)];
+              if (t && (t.STATUS || t.status)) status = t.STATUS || t.status;
               let concluida = '';
               if (status === '5') concluida = 'SIM';
               else if (status) concluida = 'NÃO';
@@ -219,7 +197,11 @@ export const PrioritariasList: React.FC<PrioritariasListProps> = ({ tasks }) => 
                           setEditandoValor(novaData);
                           setSavingId(item.idtask);
                           await updateBAtividadeG(item.idtask, { dataconclusao: novaData || null });
-                          setDados(prev => prev.map(d => d.idtask === item.idtask ? { ...d, dataconclusao: novaData || undefined } : d));
+                          setDados(prev => {
+                            const novos = prev.map(d => d.idtask === item.idtask ? { ...d, dataconclusao: novaData || undefined } : d);
+                            setTimeout(aplicarFiltro, 0); // Garante atualização do filtro após o setDados
+                            return novos;
+                          });
                           setSavingId(null);
                           setEditandoId(null);
                         }}
