@@ -1,13 +1,35 @@
 import React, { useEffect, useState } from 'react';
 import { fetchBitrixTaskById } from '../services/bitrixTaskById';
 import { fetchBAtividadeG, updateBAtividadeG, BAtividadeG } from '../services/batividadegService';
-import { User as UserIcon, Hash as HashIcon, Calendar, Search, ArrowRight } from 'lucide-react';
+import { User as UserIcon, Hash as HashIcon, Calendar, Search, ArrowRight, Trash2 } from 'lucide-react';
 
 interface PrioritariasListProps {
   tasks: any[];
 }
 
 export const PrioritariasList: React.FC<PrioritariasListProps> = ({ tasks }) => {
+  // Estado para exclusão e funções relacionadas (devem estar dentro do componente)
+  const [confirmDelete, setConfirmDelete] = useState<{ open: boolean; idtask: number | null }>({ open: false, idtask: null });
+
+  const handleDelete = (idtask: number) => {
+    setConfirmDelete({ open: true, idtask });
+  };
+
+  const confirmDeleteAction = async () => {
+    if (!confirmDelete.idtask) return;
+    try {
+      await updateBAtividadeG(confirmDelete.idtask, { prioridade: false });
+      setDados(prev => prev.filter(d => d.idtask !== confirmDelete.idtask));
+      setConfirmDelete({ open: false, idtask: null });
+    } catch (err) {
+      alert('Erro ao excluir tarefa prioritária.');
+      setConfirmDelete({ open: false, idtask: null });
+    }
+  };
+
+  const cancelDeleteAction = () => {
+    setConfirmDelete({ open: false, idtask: null });
+  };
     // Estado para armazenar tasks buscadas dinamicamente (completo)
     const [tasksMap, setTasksMap] = useState<Record<string, any>>({});
 
@@ -155,6 +177,7 @@ export const PrioritariasList: React.FC<PrioritariasListProps> = ({ tasks }) => 
               <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Comentário Diretor</th>
               <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Data Conclusão Diretor</th>
               <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Concluída Bitrix</th>
+              <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase text-right">Ação</th>
             </tr>
           </thead>
           <tbody>
@@ -232,11 +255,27 @@ export const PrioritariasList: React.FC<PrioritariasListProps> = ({ tasks }) => 
                     )}
                   </td>
                   <td className="px-6 py-4 text-sm font-bold text-emerald-700">{concluida}</td>
+                  <td className="px-6 py-4 text-sm text-right">
+                    <button onClick={() => handleDelete(item.idtask)} className="text-red-600 hover:text-red-800"><Trash2 size={16} /></button>
+                  </td>
                 </tr>
               );
             })}
           </tbody>
         </table>
+      )}
+      {/* Modal de confirmação de exclusão */}
+      {confirmDelete.open && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-2xl shadow-xl max-w-sm w-full mx-4">
+            <h3 className="text-lg font-bold mb-4 text-rose-700 flex items-center gap-2"><Trash2 size={20}/> Confirmar Exclusão</h3>
+            <p className="mb-6">Tem certeza que deseja remover a prioridade desta tarefa?</p>
+            <div className="flex gap-2">
+              <button onClick={confirmDeleteAction} className="bg-rose-600 text-white px-4 py-2 rounded-lg flex-1">Excluir</button>
+              <button onClick={cancelDeleteAction} className="bg-gray-500 text-white px-4 py-2 rounded-lg flex-1">Cancelar</button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
