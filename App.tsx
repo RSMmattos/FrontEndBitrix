@@ -105,7 +105,7 @@ const App: React.FC = () => {
     // Carregar dados para a página Gestao
     //
   
-  // Ajuste: dateFrom inicia 30 dias atrás para garantir que a tabela não venha vazia
+  // Ajuste: dateFrom inicia 30 dias atrás para garantir que a tabela venha com o último mês por padrão
   const [dateFrom, setDateFrom] = useState<string>(format(subDays(new Date(), 30), 'yyyy-MM-dd'));
   const [dateTo, setDateTo] = useState<string>(format(new Date(), 'yyyy-MM-dd'));
   
@@ -118,16 +118,28 @@ const App: React.FC = () => {
     setIsAuthChecking(false);
   }, []);
 
+
   const loadData = useCallback(async (isManualRefresh = false) => {
     if (!currentUser) return;
     if (isManualRefresh) setIsRefreshing(true); else setLoading(true);
     setError(null);
+    // Validação do intervalo de datas (máx. 10 meses)
     try {
+      const from = new Date(dateFrom);
+      const to = new Date(dateTo);
+      const diffMs = to.getTime() - from.getTime();
+      const diffDias = diffMs / (1000 * 60 * 60 * 24);
+      if (diffDias > 31 * 10) {
+        setError('Por favor, faça um filtro de no máximo 10 meses.');
+        setLoading(false);
+        setIsRefreshing(false);
+        return;
+      }
       const data = await fetchMergedTasks(dateFrom, dateTo);
       setTasks(data);
       setPendingChanges({});
     } catch (err: any) {
-      setError(`Erro ao carregar Bitrix: ${err.message}`);
+      setError('Por favor, faça um filtro de no máximo 10 meses.');
     } finally {
       setLoading(false);
       setIsRefreshing(false);
