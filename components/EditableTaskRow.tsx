@@ -81,88 +81,16 @@ export const EditableTaskRow: React.FC<EditableTaskRowProps> = ({
           <span className="text-[11px] font-bold text-slate-600">{task.RESPONSIBLE_NAME}</span>
         </div>
       </td>
-      {/* CRIAÇÃO */}
-      <td className="px-6 py-5 align-top">
-        <span className="text-[11px] font-bold text-slate-600">{formatDateStr(task.CREATED_DATE)}</span>
-      </td>
 
-      {/* PRAZO (EDITÁVEL) */}
-      {/* PRAZO BITRIX */}
+      {/* PRAZO PRIORITÁRIA */}
       <td className="px-6 py-5 align-top">
-        <div className="flex flex-col gap-1.5 min-w-[140px]">
-          <div className="relative group/date">
-            <Calendar className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300" size={12} />
-            <input 
-              type="datetime-local" 
-              value={task.DEADLINE ? new Date(task.DEADLINE).toISOString().slice(0, 16) : ''}
-              disabled
-              className="w-full bg-slate-50 border border-slate-200 rounded-lg py-1.5 pl-8 pr-2 text-[10px] font-bold text-slate-600"
-            />
-          </div>
-          {task.DEADLINE ? (
-            <div className="flex items-center gap-1 text-[9px] font-black uppercase mt-1"
-              style={{
-                color: new Date(task.DEADLINE) < new Date() ? '#ef4444' : (new Date(task.DEADLINE).toDateString() === new Date().toDateString() ? '#f59e42' : '#059669')
-              }}
-            >
-              {new Date(task.DEADLINE) < new Date() ? (
-                <>
-                  <AlertCircle size={10} /> Atrasado
-                </>
-              ) : new Date(task.DEADLINE).toDateString() === new Date().toDateString() ? (
-                <>
-                  <AlertCircle size={10} /> Hoje
-                </>
-              ) : (
-                <>
-                  <AlertCircle size={10} /> Futuro
-                </>
-              )}
-            </div>
-          ) : (
-            <div className="flex items-center gap-1 text-[9px] font-black uppercase mt-1 text-slate-400">
-              <AlertCircle size={10} /> Prazo Indeterminado
-            </div>
-          )}
-        </div>
+        <input
+          type="date"
+          value={pendingChanges.batividadeg_dataprazofinal !== undefined ? pendingChanges.batividadeg_dataprazofinal : (task.batividadeg_dataprazofinal || '')}
+          onChange={e => onChange(task.ID, 'batividadeg_dataprazofinal', e.target.value)}
+          className="bg-white border border-slate-200 rounded-lg px-2 py-1.5 text-[10px] font-black outline-none focus:ring-2 focus:ring-emerald-500"
+        />
       </td>
-
-      {/* PRAZO FINAL (API) */}
-      <td className="px-6 py-5 align-top">
-        <div className="flex flex-col gap-1.5 min-w-[140px]">
-          <div className="relative group/date">
-            <Calendar className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-300" size={12} />
-            <input
-              type="datetime-local"
-              value={
-                pendingChanges.batividadeg_dataprazofinal !== undefined
-                  ? (pendingChanges.batividadeg_dataprazofinal ? pendingChanges.batividadeg_dataprazofinal.slice(0, 16) : '')
-                  : (task.batividadeg_dataprazofinal ? task.batividadeg_dataprazofinal.slice(0, 16) : '')
-              }
-              onChange={e => {
-                const value = e.target.value ? e.target.value : null;
-                onChange(task.ID, 'batividadeg_dataprazofinal', value);
-                // Atualiza o comentário automaticamente
-                const deconcluir = pendingChanges.batividadeg_deconcluir !== undefined
-                  ? pendingChanges.batividadeg_deconcluir
-                  : (task.batividadeg_deconcluir || 'Totalmente');
-                let prazoFormatado = '';
-                if (value) {
-                  try {
-                    const data = new Date(value);
-                    prazoFormatado = `${String(data.getDate()).padStart(2, '0')}/${String(data.getMonth()+1).padStart(2, '0')}/${data.getFullYear()}`;
-                  } catch {
-                    prazoFormatado = value;
-                  }
-                  onChange(task.ID, 'batividadeg_comentario', `Tarefa Prioritária - deve ser concluida (${deconcluir.toLowerCase()}) até ${prazoFormatado}`);
-                }
-              }}
-              className="w-full bg-white border border-slate-200 rounded-lg py-1.5 pl-8 pr-2 text-[10px] font-bold text-slate-600"
-            />
-          </div>
-        </div>
-      </td>
-
 
       {/* URGENTE? */}
       <td className="px-6 py-5 align-top text-center">
