@@ -90,6 +90,7 @@ const App: React.FC = () => {
   const [isAuthChecking, setIsAuthChecking] = useState(true);
   const [activeTab, setActiveTab] = useState<ActiveTab>('activities'); 
   const [tasks, setTasks] = useState<BitrixTask[]>([]);
+  const [allTasks, setAllTasks] = useState<BitrixTask[]|null>(null); // Para busca global
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState<string>('');
@@ -209,15 +210,16 @@ const App: React.FC = () => {
     let result = tasks;
     const hasSearch = !!searchTerm.trim();
     if (hasSearch) {
-      const low = searchTerm.toLowerCase();
-      // Busca por ID, nome ou responsável, ignorando filtro de data
-      result = tasks.filter(t =>
-        t.TITLE.toLowerCase().includes(low) ||
-        t.ID.includes(low) ||
-        (t.RESPONSIBLE_NAME && t.RESPONSIBLE_NAME.toLowerCase().includes(low))
-      );
+      if (allTasks) {
+        const low = searchTerm.toLowerCase();
+        return allTasks.filter(t =>
+          t.TITLE.toLowerCase().includes(low) ||
+          t.ID.includes(low) ||
+          (t.RESPONSIBLE_NAME && t.RESPONSIBLE_NAME.toLowerCase().includes(low))
+        );
+      }
+      return [];
     } else {
-      // Filtro de grupo e status só se não houver busca
       if (selectedGroup) {
         result = result.filter(t => t.GROUP_NAME === selectedGroup);
       }
@@ -226,9 +228,21 @@ const App: React.FC = () => {
       } else if (statusFilter === 'not-completed') {
         result = result.filter(t => t.STATUS !== '5');
       }
+      return result;
     }
-    return result;
-  }, [tasks, searchTerm, selectedGroup, statusFilter]);
+  }, [tasks, searchTerm, selectedGroup, statusFilter, allTasks]);
+  // Busca global ao digitar na pesquisa
+  useEffect(() => {
+    const doGlobalSearch = async () => {
+      if (searchTerm.trim()) {
+        const all = await fetchTasks();
+        setAllTasks(all);
+      } else {
+        setAllTasks(null);
+      }
+    };
+    doGlobalSearch();
+  }, [searchTerm]);
 
   const loadStats = useMemo(() => {
     const totalRecords = filteredTasks.length;
