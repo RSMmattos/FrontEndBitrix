@@ -26,27 +26,40 @@ export const fetchTasks = async (startDate?: string, endDate?: string): Promise<
       ? Object.fromEntries(gruposData.map((g: any) => [String(g.groupId), g.nome]))
       : {};
 
-    return data.map((t: any) => ({
-      ID: String(t.idtask),
-      TITLE: t.title || '',
-      DESCRIPTION: t.description || '',
-      PRIORITY: String(t.priority ?? ''),
-      STATUS: String(t.status ?? ''),
-      CREATED_DATE: t.createdDate || '',
-      DEADLINE: t.deadline || null,
-      CLOSED_DATE: t.closedDate || null,
-      RESPONSIBLE_ID: String(t.responsibleId ?? ''),
-      RESPONSIBLE_NAME: userMap[String(t.responsibleId)] || '',
-      PARENT_ID: t.parentId ? String(t.parentId) : null,
-      GROUP_NAME: grupoMap[String(t.groupId)] || '',
-      AUDITORS: [],
-      TASK_TYPE: undefined,
-      COMMENT: '',
-      idgrupobitrix: t.groupId ?? undefined,
-      batividadeg_prioridade: undefined,
-      batividadeg_comentario: undefined,
-      batividadeg_dataprazofinal: undefined,
-    }));
+    // Determina o tipo da tarefa: MÃE, FILHA ou NORMAL
+    const parentIds = new Set(data.map((t: any) => String(t.parentId)).filter((id: string) => id && id !== '0'));
+
+    return data.map((t: any) => {
+      const id = String(t.idtask);
+      const parentId = String(t.parentId ?? '0');
+      const isFilha = parentId !== '0' && parentId !== '';
+      const isMae = data.some((other: any) => String(other.parentId) === id);
+      let taskType: 'MÃE' | 'FILHA' | 'NORMAL' = 'NORMAL';
+      if (isFilha) taskType = 'FILHA';
+      else if (isMae) taskType = 'MÃE';
+
+      return {
+        ID: id,
+        TITLE: t.title || '',
+        DESCRIPTION: t.description || '',
+        PRIORITY: String(t.priority ?? ''),
+        STATUS: String(t.status ?? ''),
+        CREATED_DATE: t.createdDate || '',
+        DEADLINE: t.deadline || null,
+        CLOSED_DATE: t.closedDate || null,
+        RESPONSIBLE_ID: String(t.responsibleId ?? ''),
+        RESPONSIBLE_NAME: userMap[String(t.responsibleId)] || '',
+        PARENT_ID: parentId !== '0' ? parentId : null,
+        GROUP_NAME: grupoMap[String(t.groupId)] || '',
+        AUDITORS: [],
+        TASK_TYPE: taskType,
+        COMMENT: '',
+        idgrupobitrix: t.groupId ?? undefined,
+        batividadeg_prioridade: undefined,
+        batividadeg_comentario: undefined,
+        batividadeg_dataprazofinal: undefined,
+      };
+    });
   } catch (err) {
     console.error('Erro ao buscar tarefas:', err);
     return [];

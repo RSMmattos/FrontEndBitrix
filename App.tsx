@@ -461,11 +461,9 @@ const App: React.FC = () => {
                           <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">ID</th>
                           <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Nome</th>
                           <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Responsável</th>
-                          <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Criação</th>
-                          <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Prazo Bitrix</th>
-                          <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Prazo Final</th>
-                          <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase text-center">Urgente?</th>
-                          <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Último Comentário</th>
+                          <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Prazo Prioritária</th>
+                          <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase text-center">Prioritária</th>
+                          <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Forma de Entrega</th>
                           <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase text-right">Info</th>
                         </tr>
                       </thead>
