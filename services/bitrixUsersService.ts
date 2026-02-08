@@ -1,7 +1,7 @@
 // Serviço para buscar usuários do Bitrix via proxy backend
 import axios from 'axios';
-
-const API_URL = 'http://10.0.0.6:3001/api/bitrix-users';
+import { API_BASE_URL } from '../constants';
+const API_URL = `${API_BASE_URL}/api/bitrix-users`;
 
 export async function fetchBitrixUsers(params = {}) {
   try {

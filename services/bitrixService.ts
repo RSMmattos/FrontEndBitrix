@@ -1,4 +1,3 @@
-
 import { BitrixTask } from '../types';
 
 // Ajustado para 16 caracteres (qpf9), que é o padrão de tokens do Bitrix24.
@@ -6,85 +5,51 @@ import { BitrixTask } from '../types';
 const BASE_URL = 'https://agroserra.bitrix24.com.br/rest/77/1611kgqjihc2tsfy';
 
 export const fetchTasks = async (startDate?: string, endDate?: string): Promise<BitrixTask[]> => {
-  let allTasks: any[] = [];
-  let start = 0;
-  let hasMore = true;
-
   try {
-    const filter: any = {};
-    if (startDate) filter[">=CREATED_DATE"] = `${startDate}T00:00:00`;
-    if (endDate) filter["<=CREATED_DATE"] = `${endDate}T23:59:59`;
+    // Busca tarefas
+    const response = await fetch('http://10.0.0.6:3001/api/bbitrixtask');
+    if (!response.ok) throw new Error(`Erro na API: ${response.status}`);
+    const data = await response.json();
+    if (!Array.isArray(data)) return [];
 
-    while (hasMore) {
-      const response = await fetch(`${BASE_URL}/tasks.task.list`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          order: { ID: 'DESC' },
-          filter: filter,
-          select: ["ID", "TITLE", "DESCRIPTION", "RESPONSIBLE_ID", "CREATED_DATE", "DEADLINE", "CLOSED_DATE", "PARENT_ID", "GROUP_ID", "PRIORITY", "STATUS", "AUDITORS"],
-          start: start
-        })
-      });
+    // Busca usuários responsáveis
+    const usersResp = await fetch('http://10.0.0.6:3001/api/bbitrixuser');
+    const usersData = usersResp.ok ? await usersResp.json() : [];
+    const userMap = Array.isArray(usersData)
+      ? Object.fromEntries(usersData.map((u: any) => [String(u.responsibleId), u.nome]))
+      : {};
 
-      if (response.status === 401) {
-        throw new Error("Chave do Webhook inválida ou expirada (Erro 401). Verifique a URL no código.");
-      }
+    // Busca grupos
+    const gruposResp = await fetch('http://10.0.0.6:3001/api/bbitrixgrupo');
+    const gruposData = gruposResp.ok ? await gruposResp.json() : [];
+    const grupoMap = Array.isArray(gruposData)
+      ? Object.fromEntries(gruposData.map((g: any) => [String(g.groupId), g.nome]))
+      : {};
 
-      if (!response.ok) throw new Error(`Erro na API: ${response.status}`);
-      
-      const data = await response.json();
-      const currentBatch = data.result?.tasks || data.result || [];
-      
-      if (!Array.isArray(currentBatch)) {
-        hasMore = false;
-        break;
-      }
-
-      allTasks = [...allTasks, ...currentBatch];
-      
-      if (data.next && currentBatch.length >= 50) {
-        start = data.next;
-      } else {
-        hasMore = false;
-      }
-
-      if (start > 5000) break; // Limite para evitar travamentos
-    }
-
-    const parentIds = new Set(allTasks.map((t: any) => String(t.parentId || t.PARENT_ID)).filter((id: string) => id !== "0" && id !== ""));
-
-    return allTasks.map((t: any) => {
-      const id = String(t.id || t.ID);
-      const parentId = String(t.parentId || t.PARENT_ID || "0");
-      const isFilha = parentId !== "0" && parentId !== "";
-      const isMae = parentIds.has(id);
-      
-      let idgrupobitrix = undefined;
-      if (t.groupId !== undefined) idgrupobitrix = Number(t.groupId);
-      else if (t.GROUP_ID !== undefined) idgrupobitrix = Number(t.GROUP_ID);
-      return {
-        ID: id,
-        TITLE: String(t.title || t.TITLE),
-        DESCRIPTION: String(t.description || t.DESCRIPTION || ""),
-        RESPONSIBLE_ID: String(t.responsibleId || t.RESPONSIBLE_ID),
-        RESPONSIBLE_NAME: t.responsible?.name || t.RESPONSIBLE_NAME || `Usuário ${t.responsibleId || t.RESPONSIBLE_ID}`,
-        CREATED_DATE: t.createdDate || t.CREATED_DATE,
-        DEADLINE: t.deadline || t.DEADLINE || null,
-        CLOSED_DATE: t.closedDate || t.CLOSED_DATE || null,
-        PRIORITY: String(t.priority || t.PRIORITY),
-        STATUS: String(t.status || t.STATUS),
-        PARENT_ID: isFilha ? parentId : null,
-        GROUP_NAME: (t.group?.name || t.GROUP_NAME) || "Geral",
-        idgrupobitrix,
-        AUDITORS: t.auditorsData ? Object.values(t.auditorsData).map((a: any) => a.name) : [],
-        TASK_TYPE: isFilha ? 'FILHA' : (isMae ? 'MÃE' : 'NORMAL')
-      };
-    }) as BitrixTask[];
-
-  } catch (error: any) {
-    console.error('Erro Bitrix Service:', error);
-    throw error;
+    return data.map((t: any) => ({
+      ID: String(t.idtask),
+      TITLE: t.title || '',
+      DESCRIPTION: t.description || '',
+      PRIORITY: String(t.priority ?? ''),
+      STATUS: String(t.status ?? ''),
+      CREATED_DATE: t.createdDate || '',
+      DEADLINE: t.deadline || null,
+      CLOSED_DATE: t.closedDate || null,
+      RESPONSIBLE_ID: String(t.responsibleId ?? ''),
+      RESPONSIBLE_NAME: userMap[String(t.responsibleId)] || '',
+      PARENT_ID: t.parentId ? String(t.parentId) : null,
+      GROUP_NAME: grupoMap[String(t.groupId)] || '',
+      AUDITORS: [],
+      TASK_TYPE: undefined,
+      COMMENT: '',
+      idgrupobitrix: t.groupId ?? undefined,
+      batividadeg_prioridade: undefined,
+      batividadeg_comentario: undefined,
+      batividadeg_dataprazofinal: undefined,
+    }));
+  } catch (err) {
+    console.error('Erro ao buscar tarefas:', err);
+    return [];
   }
 };
 

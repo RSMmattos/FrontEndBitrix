@@ -1,0 +1,20 @@
+
+
+# Documentação das APIs - Aba Atividades
+
+Esta documentação lista apenas as APIs realmente utilizadas na aba "Atividades" do sistema, com as rotas completas:
+
+- `GET    {API_BASE_URL}/api/batividadeg` — Listar atividades gerais
+- `GET    {API_BASE_URL}/api/batividadeg/data-prazo-final-relatorio?ano={ano}` — Prazo final do relatório
+- `GET    {API_BASE_URL}/api/batividadeg/data-conclussao-relatorio-v2?ano={ano}` — Conclusão do relatório
+- `GET    {API_BASE_URL}/api/batividadeg/porcentagem-relatorio?ano={ano}` — Porcentagem de execução
+- `GET    {API_BASE_URL}/api/bgcatividade` — Grupos de atividades
+- `GET    {API_BASE_URL}/api/bgcatividade/{codccusto}` — Grupo de atividades por centro de custo
+- `DELETE {API_BASE_URL}/api/bgcatividade/{codccusto}` — Excluir grupo de atividades
+- `GET    {API_BASE_URL}/api/gccusto` — Centros de custo
+- `GET    {API_BASE_URL}/api/relatorio/resumo-atividades-pivot` — Resumo de atividades (relatório)
+- `GET    {API_BASE_URL}/api/batividadeg/grupo/{idgrupobitrix}` — Atividades de um grupo específico
+- `PUT    {API_BASE_URL}/api/batividadeg/{idtask}` — Atualizar atividade (ex: prioridade, conclusão)
+- `POST   {API_BASE_URL}/api/batividadeg` — Criar nova atividade
+
+Substitua `{API_BASE_URL}` pelo valor definido em `constants.tsx` (ex: http://localhost:3001 ou http://10.0.0.6:3001).

@@ -2,7 +2,8 @@
 import { BitrixTask } from '../types';
 
 // const BASE_URL = 'https://agroserra.bitrix24.com.br/rest/77/1611kgqjihc2tsfy';
-const BASE_URL = 'http://10.0.0.6:3001/api';
+import { API_BASE_URL } from '../constants';
+const BASE_URL = `${API_BASE_URL}/api`;
 
 export const fetchBitrixTaskById = async (id: string | number): Promise<BitrixTask | null> => {
   try {

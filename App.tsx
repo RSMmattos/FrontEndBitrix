@@ -40,9 +40,10 @@ import { subDays, format } from 'date-fns';
 import { PrioritariasList } from './components/PrioritariasList';
 // import { ResumoAtividadesPivot } from './components/ResumoAtividadesPivot';
 import VariaveisPage from './VariaveisPage';
+import TaskOpenSmartPage from './components/TaskOpenSmartPage';
 // import { Gestao } from './components/Gestao';
 
-type ActiveTab = 'dashboard' | 'activities' | 'cost-centers' | 'group-links' | 'bitrix-groups' | 'usuarios-online' | 'perfil-usuario' | 'prioritarias' | 'consultas' | 'variaveis';
+type ActiveTab = 'dashboard' | 'activities' | 'cost-centers' | 'group-links' | 'bitrix-groups' | 'usuarios-online' | 'perfil-usuario' | 'prioritarias' | 'consultas' | 'variaveis' | 'task-open-smart';
 
 
 const App: React.FC = () => {
@@ -506,6 +507,9 @@ const App: React.FC = () => {
             null
           ) : activeTab === 'variaveis' ? (
             <VariaveisPage />
+
+          ) : activeTab === 'task-open-smart' ? (
+            <TaskOpenSmartPage />
           ) : (
 
 
@@ -602,9 +606,10 @@ const App: React.FC = () => {
               </div>
             </>
           )}
+
+
         </main>
       </div>
-
       <TaskDetailsModal task={selectedTask} onClose={() => setSelectedTask(null)} onEdit={() => {}} onQuickUpdate={async (id, up) => {
         await updateTask(id, up);
         await loadData();
