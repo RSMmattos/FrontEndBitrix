@@ -124,23 +124,13 @@ const App: React.FC = () => {
     if (!currentUser) return;
     if (isManualRefresh) setIsRefreshing(true); else setLoading(true);
     setError(null);
-    // Validação do intervalo de datas (máx. 10 meses)
+    // Removido limite de 10 meses no filtro de datas
     try {
-      const from = new Date(dateFrom);
-      const to = new Date(dateTo);
-      const diffMs = to.getTime() - from.getTime();
-      const diffDias = diffMs / (1000 * 60 * 60 * 24);
-      if (diffDias > 31 * 10) {
-        setError('Por favor, faça um filtro de no máximo 10 meses.');
-        setLoading(false);
-        setIsRefreshing(false);
-        return;
-      }
       const data = await fetchMergedTasks(dateFrom, dateTo);
       setTasks(data);
       setPendingChanges({});
     } catch (err: any) {
-      setError('Por favor, faça um filtro de no máximo 10 meses.');
+      setError('Erro ao carregar dados.');
     } finally {
       setLoading(false);
       setIsRefreshing(false);
@@ -217,21 +207,25 @@ const App: React.FC = () => {
 
   const filteredTasks = useMemo(() => {
     let result = tasks;
-    if (selectedGroup) {
-      result = result.filter(t => t.GROUP_NAME === selectedGroup);
-    }
-    if (searchTerm) {
+    const hasSearch = !!searchTerm.trim();
+    if (hasSearch) {
       const low = searchTerm.toLowerCase();
-      result = result.filter(t => 
-        t.TITLE.toLowerCase().includes(low) || 
-        t.ID.includes(low) || 
+      // Busca por ID, nome ou responsável, ignorando filtro de data
+      result = tasks.filter(t =>
+        t.TITLE.toLowerCase().includes(low) ||
+        t.ID.includes(low) ||
         (t.RESPONSIBLE_NAME && t.RESPONSIBLE_NAME.toLowerCase().includes(low))
       );
-    }
-    if (statusFilter === 'completed') {
-      result = result.filter(t => t.STATUS === '5');
-    } else if (statusFilter === 'not-completed') {
-      result = result.filter(t => t.STATUS !== '5');
+    } else {
+      // Filtro de grupo e status só se não houver busca
+      if (selectedGroup) {
+        result = result.filter(t => t.GROUP_NAME === selectedGroup);
+      }
+      if (statusFilter === 'completed') {
+        result = result.filter(t => t.STATUS === '5');
+      } else if (statusFilter === 'not-completed') {
+        result = result.filter(t => t.STATUS !== '5');
+      }
     }
     return result;
   }, [tasks, searchTerm, selectedGroup, statusFilter]);

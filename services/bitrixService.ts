@@ -6,8 +6,12 @@ const BASE_URL = 'https://agroserra.bitrix24.com.br/rest/77/1611kgqjihc2tsfy';
 
 export const fetchTasks = async (startDate?: string, endDate?: string): Promise<BitrixTask[]> => {
   try {
-    // Busca tarefas
-    const response = await fetch('http://10.0.0.6:3001/api/bbitrixtask');
+    // Busca tarefas com filtro de data se informado
+    let url = 'http://10.0.0.6:3001/api/bbitrixtask';
+    if (startDate && endDate) {
+      url += `?createdDate_gte=${startDate}&createdDate_lte=${endDate}`;
+    }
+    const response = await fetch(url);
     if (!response.ok) throw new Error(`Erro na API: ${response.status}`);
     const data = await response.json();
     if (!Array.isArray(data)) return [];
