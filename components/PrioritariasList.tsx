@@ -22,7 +22,7 @@ export const PrioritariasList: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [selectedGroup, setSelectedGroup] = useState('');
   const [consulta, setConsulta] = useState('');
-  const [filtroStatusDiretor, setFiltroStatusDiretor] = useState<string>('');
+  const [filtroStatusDiretor, setFiltroStatusDiretor] = useState<string>('Não');
   const [filtroAno, setFiltroAno] = useState<string>('');
   const [filtroMes, setFiltroMes] = useState<string>('');
   const [modalAberto, setModalAberto] = useState(false);
