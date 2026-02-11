@@ -1,4 +1,19 @@
 import React, { useEffect, useState } from 'react';
+
+function formatarDataLocal(dataStr: string) {
+  if (!dataStr) return '';
+  // Extrai apenas a parte da data (YYYY-MM-DD)
+  const match = dataStr.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (match) {
+    const [_, ano, mes, dia] = match;
+    const dt = new Date(Number(ano), Number(mes) - 1, Number(dia));
+    return dt.toLocaleDateString('pt-BR');
+  }
+  // fallback para outros formatos
+  const dt = new Date(dataStr);
+  if (isNaN(dt.getTime())) return '--';
+  return dt.toLocaleDateString('pt-BR');
+}
 // Modal lateral customizada (sem react-modal)
 import { Search, Filter, User as UserIcon } from 'lucide-react';
 
@@ -34,6 +49,19 @@ export const PrioritariasList: React.FC = () => {
   };
 
   // Função para salvar a data de conclusão
+  // Função para atualizar os dados da lista
+  const atualizarDados = async () => {
+    setLoading(true);
+    try {
+      const r = await fetch('http://10.0.0.6:3001/api/prioritariasOficial');
+      const data = await r.json();
+      setDados(Array.isArray(data) ? data : []);
+    } catch {
+      // erro silencioso
+    }
+    setLoading(false);
+  };
+
   const salvarDataConclusao = async () => {
     if (!atividadeSelecionada) return;
     setSalvando(true);
@@ -46,7 +74,7 @@ export const PrioritariasList: React.FC = () => {
         }
       );
       if (resp.ok) {
-        alert('Data de conclusão atualizada com sucesso!');
+        await atualizarDados();
         fecharModal();
       } else {
         alert('Erro ao atualizar data.');
@@ -58,14 +86,7 @@ export const PrioritariasList: React.FC = () => {
   };
 
   useEffect(() => {
-    setLoading(true);
-    fetch('http://10.0.0.6:3001/api/prioritariasOficial')
-      .then(r => r.json())
-      .then(data => {
-        setDados(Array.isArray(data) ? data : []);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
+    atualizarDados();
   }, []);
 
   const gruposUnicos = Array.from(new Set(dados.map(d => d.nomeGrupo).filter(Boolean)));
@@ -314,7 +335,7 @@ export const PrioritariasList: React.FC = () => {
               </div>
               <div className="mb-2 flex gap-2 items-center">
                 <span className="text-xs font-bold text-slate-500 uppercase">Data Conclusão Diretor:</span>
-                <span className="text-sm font-bold text-slate-700">{atividadeSelecionada.dataConclusaoDiretor ? new Date(atividadeSelecionada.dataConclusaoDiretor).toLocaleDateString('pt-BR') : '--'}</span>
+                <span className="text-sm font-bold text-slate-700">{atividadeSelecionada.dataConclusaoDiretor ? formatarDataLocal(atividadeSelecionada.dataConclusaoDiretor) : '--'}</span>
               </div>
               <div className="mb-6">
                 <label className="block text-xs font-black text-slate-500 uppercase mb-1">Data Aprovação</label>
@@ -327,7 +348,7 @@ export const PrioritariasList: React.FC = () => {
                 />
                 {atividadeSelecionada.dataconclusao && (
                   <div className="mt-2 text-xs text-emerald-700 font-bold">
-                    Data já aprovada: {new Date(atividadeSelecionada.dataconclusao).toLocaleDateString('pt-BR')}
+                    Data já aprovada: {formatarDataLocal(atividadeSelecionada.dataconclusao)}
                   </div>
                 )}
               </div>
