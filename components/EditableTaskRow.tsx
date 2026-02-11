@@ -92,16 +92,13 @@ export const EditableTaskRow: React.FC<EditableTaskRowProps> = ({
         />
       </td>
 
-      {/* URGENTE? */}
+      {/* PRIORITÁRIA (checkbox) */}
       <td className="px-6 py-5 align-top text-center">
-        <select
-          value={
-            pendingChanges.batividadeg_prioridade !== undefined
-              ? (pendingChanges.batividadeg_prioridade ? 'SIM' : 'NÃO')
-              : (task.batividadeg_prioridade ? 'SIM' : 'NÃO')
-          }
+        <input
+          type="checkbox"
+          checked={pendingChanges.batividadeg_prioridade !== undefined ? pendingChanges.batividadeg_prioridade : !!task.batividadeg_prioridade}
           onChange={e => {
-            const value = e.target.value === 'SIM';
+            const value = e.target.checked;
             onChange(task.ID, 'batividadeg_prioridade', value);
             // Atualiza o comentário automaticamente
             const deconcluir = pendingChanges.batividadeg_deconcluir !== undefined
@@ -112,20 +109,27 @@ export const EditableTaskRow: React.FC<EditableTaskRowProps> = ({
               : (task.batividadeg_dataprazofinal || '');
             let prazoFormatado = '';
             if (prazo) {
-              try {
-                const data = new Date(prazo);
-                prazoFormatado = `${String(data.getDate()).padStart(2, '0')}/${String(data.getMonth()+1).padStart(2, '0')}/${data.getFullYear()}`;
-              } catch {
-                prazoFormatado = prazo;
+              // Corrige para não subtrair um dia: pega direto do input yyyy-MM-dd
+              if (/^\d{4}-\d{2}-\d{2}$/.test(prazo)) {
+                const [ano, mes, dia] = prazo.split('-');
+                prazoFormatado = `${dia}/${mes}/${ano}`;
+              } else {
+                try {
+                  const data = new Date(prazo);
+                  prazoFormatado = `${String(data.getDate()).padStart(2, '0')}/${String(data.getMonth()+1).padStart(2, '0')}/${data.getFullYear()}`;
+                } catch {
+                  prazoFormatado = prazo;
+                }
               }
-              onChange(task.ID, 'batividadeg_comentario', `Tarefa Prioritária - deve ser concluida (${deconcluir.toLowerCase()}) até ${prazoFormatado}`);
+              if (value) {
+                onChange(task.ID, 'batividadeg_comentario', `Tarefa Prioritária - deve ser concluida (${deconcluir.toLowerCase()}) até ${prazoFormatado}`);
+              } else {
+                onChange(task.ID, 'batividadeg_comentario', '');
+              }
             }
           }}
-          className={`bg-white border rounded-lg px-2 py-1.5 text-[10px] font-black uppercase tracking-widest outline-none ${(pendingChanges.batividadeg_prioridade !== undefined ? pendingChanges.batividadeg_prioridade : task.batividadeg_prioridade) ? 'text-rose-600 border-rose-200' : 'text-slate-600 border-slate-200'}`}
-        >
-          <option value="NÃO">NÃO</option>
-          <option value="SIM">SIM</option>
-        </select>
+          className="accent-red-600 w-5 h-5 rounded border border-slate-300"
+        />
       </td>
 
       {/* DE CONCLUIR */}

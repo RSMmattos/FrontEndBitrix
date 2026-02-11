@@ -14,7 +14,7 @@ interface TaskRowProps {
 
 export const TaskRow: React.FC<TaskRowProps> = ({ task, onClick }) => {
   const status = STATUS_MAP[task.STATUS] || { label: 'Desconhecido', color: 'bg-slate-100 text-slate-600', icon: null };
-  const priority = PRIORITY_MAP[task.PRIORITY] || { label: 'Normal', color: 'text-slate-600', dot: 'bg-slate-300' };
+  // const priority = PRIORITY_MAP[task.PRIORITY] || { label: 'Normal', color: 'text-slate-600', dot: 'bg-slate-300' };
 
   const getRelativeDate = () => {
     try {
@@ -67,11 +67,14 @@ export const TaskRow: React.FC<TaskRowProps> = ({ task, onClick }) => {
         </Badge>
       </td>
       <td className="px-8 py-6 whitespace-nowrap align-top">
-        <div className="flex items-center gap-2">
-          <div className={`w-1.5 h-1.5 rounded-full ${priority.dot} shadow-sm animate-pulse`}></div>
-          <span className={`text-[10px] font-black uppercase tracking-widest ${priority.color}`}>
-            {priority.label}
-          </span>
+        <div className="flex items-center gap-2 justify-center">
+          <input
+            type="checkbox"
+            checked={task.PRIORITY === 'high'}
+            readOnly
+            className="accent-red-600 w-5 h-5 rounded border border-slate-300 cursor-default"
+            tabIndex={-1}
+          />
         </div>
       </td>
       <td className="px-8 py-6 text-right align-top">

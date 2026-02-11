@@ -1,7 +1,7 @@
 
 import { API_BASE_URL } from '../constants';
 import React, { useState, useEffect } from 'react';
-import { Loader2, AlertCircle, RefreshCw, ChevronRight, ChevronDown, Search } from 'lucide-react';
+import { Loader2, AlertCircle, RefreshCw, ChevronRight, ChevronDown, Search, FileDown } from 'lucide-react';
 import { CostCenter } from '../types';
 
 
@@ -62,12 +62,14 @@ export const CostCenterList: React.FC = () => {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-2 flex-wrap">
         <h2 className="text-xl font-black text-slate-900">Centros de Custo</h2>
-        <button onClick={fetchCostCenters} className="bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-emerald-700 flex items-center gap-2">
-          <RefreshCw size={16} />
-          Atualizar
-        </button>
+        <div className="flex gap-2">
+          <button onClick={fetchCostCenters} className="bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-emerald-700 flex items-center gap-2">
+            <RefreshCw size={16} />
+            Atualizar
+          </button>
+        </div>
       </div>
       <div className="mb-4 flex items-center gap-2">
         <div className="relative w-full max-w-md">

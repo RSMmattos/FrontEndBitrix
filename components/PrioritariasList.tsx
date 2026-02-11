@@ -1,148 +1,154 @@
 import React, { useEffect, useState } from 'react';
-import { fetchBitrixTaskById } from '../services/bitrixTaskById';
-import { fetchBAtividadeG, updateBAtividadeG, BAtividadeG } from '../services/batividadegService';
-import { User as UserIcon, Hash as HashIcon, Calendar, Search, ArrowRight, Trash2 } from 'lucide-react';
+// Modal lateral customizada (sem react-modal)
+import { Search, Filter, User as UserIcon } from 'lucide-react';
 
-interface PrioritariasListProps {
-  tasks: any[];
-}
-
-export const PrioritariasList: React.FC<PrioritariasListProps> = ({ tasks }) => {
-  // Estado para exclusão e funções relacionadas (devem estar dentro do componente)
-  const [confirmDelete, setConfirmDelete] = useState<{ open: boolean; idtask: number | null }>({ open: false, idtask: null });
-
-  const handleDelete = (idtask: number) => {
-    setConfirmDelete({ open: true, idtask });
-  };
-
-  const confirmDeleteAction = async () => {
-    if (!confirmDelete.idtask) return;
-    try {
-      await updateBAtividadeG(confirmDelete.idtask, { prioridade: false });
-      setDados(prev => prev.filter(d => d.idtask !== confirmDelete.idtask));
-      setConfirmDelete({ open: false, idtask: null });
-    } catch (err) {
-      alert('Erro ao excluir tarefa prioritária.');
-      setConfirmDelete({ open: false, idtask: null });
-    }
-  };
-
-  const cancelDeleteAction = () => {
-    setConfirmDelete({ open: false, idtask: null });
-  };
-    // Estado para armazenar tasks buscadas dinamicamente (completo)
-    const [tasksMap, setTasksMap] = useState<Record<string, any>>({});
-
-  const [dados, setDados] = useState<BAtividadeG[]>([]);
+export const PrioritariasList: React.FC = () => {
+  const [dados, setDados] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [consulta, setConsulta] = useState("");
-  const hoje = new Date();
-  const yyyy = hoje.getFullYear();
-  const mm = String(hoje.getMonth() + 1).padStart(2, '0');
-  const dd = String(hoje.getDate()).padStart(2, '0');
-  const hojeStr = `${yyyy}-${mm}-${dd}`;
-  // Data inicial: 1 mês atrás
-  const umMesAtras = new Date(hoje);
-  umMesAtras.setMonth(umMesAtras.getMonth() - 1);
-  const yyyyIni = umMesAtras.getFullYear();
-  const mmIni = String(umMesAtras.getMonth() + 1).padStart(2, '0');
-  const ddIni = String(umMesAtras.getDate()).padStart(2, '0');
-  const umMesAtrasStr = `${yyyyIni}-${mmIni}-${ddIni}`;
-  const [dataInicial, setDataInicial] = useState(umMesAtrasStr);
-  const [dataFinal, setDataFinal] = useState(hojeStr);
-  const [filtro, setFiltro] = useState({ consulta: "", dataInicial: umMesAtrasStr, dataFinal: hojeStr });
+  const [selectedGroup, setSelectedGroup] = useState('');
+  const [consulta, setConsulta] = useState('');
+  const [filtroStatusDiretor, setFiltroStatusDiretor] = useState<string>('');
+  const [filtroAno, setFiltroAno] = useState<string>('');
+  const [filtroMes, setFiltroMes] = useState<string>('');
+  const [modalAberto, setModalAberto] = useState(false);
+  const [atividadeSelecionada, setAtividadeSelecionada] = useState<any>(null);
+  const [dataConclusao, setDataConclusao] = useState<string>('');
+  const [salvando, setSalvando] = useState(false);
+  // Função para abrir o modal e setar a atividade selecionada
+  const abrirModal = (atividade: any) => {
+    setAtividadeSelecionada(atividade);
+    // Preenche o campo com a data de hoje no formato yyyy-MM-dd
+    const hoje = new Date();
+    const yyyy = hoje.getFullYear();
+    const mm = String(hoje.getMonth() + 1).padStart(2, '0');
+    const dd = String(hoje.getDate()).padStart(2, '0');
+    setDataConclusao(`${yyyy}-${mm}-${dd}`);
+    setModalAberto(true);
+  };
+
+  // Função para fechar o modal
+  const fecharModal = () => {
+    setModalAberto(false);
+    setAtividadeSelecionada(null);
+    setDataConclusao('');
+  };
+
+  // Função para salvar a data de conclusão
+  const salvarDataConclusao = async () => {
+    if (!atividadeSelecionada) return;
+    setSalvando(true);
+    try {
+      const resp = await fetch(`http://10.0.0.6:3001/api/batividadeg/edit-by-idtask/${atividadeSelecionada.idtask}`,
+        {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ dataconclusao: dataConclusao })
+        }
+      );
+      if (resp.ok) {
+        alert('Data de conclusão atualizada com sucesso!');
+        fecharModal();
+      } else {
+        alert('Erro ao atualizar data.');
+      }
+    } catch (e) {
+      alert('Erro ao atualizar data.');
+    }
+    setSalvando(false);
+  };
+
   useEffect(() => {
-    fetchBAtividadeG().then(res => {
-      setDados(res);
-      setLoading(false);
-    });
+    setLoading(true);
+    fetch('http://10.0.0.6:3001/api/prioritariasOficial')
+      .then(r => r.json())
+      .then(data => {
+        setDados(Array.isArray(data) ? data : []);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
   }, []);
 
-  // Função para buscar task completa do Bitrix
-  const fetchTaskById = async (idtask: number | string) => {
-    const task = await fetchBitrixTaskById(idtask);
-    return task || null;
-  };
+  const gruposUnicos = Array.from(new Set(dados.map(d => d.nomeGrupo).filter(Boolean)));
+  // Extrai anos e meses únicos de dataprazofinal (prazo final diretor)
+  const anosUnicos = Array.from(new Set(dados.map(d => d.dataprazofinal ? new Date(d.dataprazofinal).getFullYear() : null).filter(Boolean))).sort();
+  const mesesUnicos = Array.from(new Set(dados.map(d => {
+    if (!d.dataprazofinal) return null;
+    const dt = new Date(d.dataprazofinal);
+    return (dt.getMonth() + 1).toString().padStart(2, '0');
+  }).filter(Boolean))).sort();
 
-  const getNome = (idtask: number | string) => {
-    const t = tasksMap[String(idtask)];
-    if (t && (t.TITLE || t.title)) return t.TITLE || t.title;
-    return 'Buscando...';
-  };
-  const getResponsavel = (idtask: number | string) => {
-    const t = tasksMap[String(idtask)];
-    if (t && (t.RESPONSIBLE_NAME || (t.responsible && t.responsible.name))) return t.RESPONSIBLE_NAME || t.responsible?.name;
-    return 'Buscando...';
-  };
-
-  // Ao montar ou atualizar dadosFiltrados, buscar tasks ausentes
-  useEffect(() => {
-    const idsFaltando = dados
-      .map(d => String(d.idtask))
-      .filter(id => !tasksMap[id]);
-    if (idsFaltando.length > 0) {
-      // Limitar buscas para evitar bloqueio/lentidão (Bitrix QUERY_LIMIT_EXCEEDED)
-      const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
-      const processSequential = async () => {
-        for (const id of idsFaltando) {
-          const task = await fetchTaskById(id);
-          setTasksMap(prev => ({ ...prev, [id]: task || {} }));
-          await delay(500); // 500ms entre cada requisição
-        }
-      };
-      processSequential();
+  const dadosFiltrados = dados.filter(item => {
+    const termo = consulta.toLowerCase();
+    if (selectedGroup && item.nomeGrupo !== selectedGroup) return false;
+    if (filtroStatusDiretor) {
+      if (filtroStatusDiretor === 'Sim' && String(item.statusDiretor) !== 'Sim') return false;
+      if (filtroStatusDiretor === 'Não' && String(item.statusDiretor) !== 'Não') return false;
     }
-    // eslint-disable-next-line
-  }, [dados]);
-
-  // Filtrar dados apenas ao clicar no botão FILTRAR
-  const [dadosFiltrados, setDadosFiltrados] = useState<BAtividadeG[]>([]);
-
-  const aplicarFiltro = () => {
-    const termo = filtro.consulta.toLowerCase();
-    const dataIni = filtro.dataInicial ? new Date(filtro.dataInicial) : null;
-    const dataFim = filtro.dataFinal ? new Date(filtro.dataFinal) : null;
-    const filtrados = dados.filter(item => {
-      const nome = getNome(item.idtask).toLowerCase();
-      const responsavel = getResponsavel(item.idtask).toLowerCase();
-      const idtask = String(item.idtask);
-      // Filtro de datas (considerando datacriacao)
-      if ((dataIni || dataFim)) {
-        if (!item.datacriacao) return false;
-        // Extrai apenas a parte da data (YYYY-MM-DD) para comparar corretamente
-        const dataStr = String(item.datacriacao).slice(0, 10); // '2025-12-21'
-        const dataItem = new Date(dataStr + 'T00:00:00');
-        if (dataIni && dataItem < dataIni) return false;
-        if (dataFim && dataItem > dataFim) return false;
-      }
+    if (filtroAno && (!item.dataprazofinal || new Date(item.dataprazofinal).getFullYear().toString() !== filtroAno)) return false;
+    if (filtroMes && (!item.dataprazofinal || (new Date(item.dataprazofinal).getMonth() + 1).toString().padStart(2, '0') !== filtroMes)) return false;
+    if (termo) {
       return (
-        nome.includes(termo) || responsavel.includes(termo) || idtask.includes(termo)
+        String(item.idtask).includes(termo) ||
+        (item.title || '').toLowerCase().includes(termo) ||
+        (item.nomeResponsavel || '').toLowerCase().includes(termo)
       );
-    });
-    setDadosFiltrados(filtrados);
-  };
-
-  // Atualiza filtro local mas só aplica ao clicar
-  useEffect(() => {
-    setFiltro({ consulta, dataInicial, dataFinal });
-  }, [consulta, dataInicial, dataFinal]);
-
-
-  // Aplica filtro sempre que dados mudar (edição, carregamento, etc)
-  useEffect(() => {
-    if (!loading) aplicarFiltro();
-    // eslint-disable-next-line
-  }, [loading, dados]);
-
-  // Estado para edição da data de conclusão
-  const [editandoId, setEditandoId] = useState<number | null>(null);
-  const [editandoValor, setEditandoValor] = useState<string>('');
-  const [savingId, setSavingId] = useState<number | null>(null);
+    }
+    return true;
+  });
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8">
-      <h2 className="text-2xl font-black text-rose-600 mb-6">Tarefas Prioritárias</h2>
+    <>
+      <div className="mb-6">
+        <h2 className="text-2xl font-black text-emerald-700">Tarefas Prioritárias</h2>
+      </div>
       <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-center">
+        <div className="flex flex-row flex-wrap gap-4 items-center">
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-black uppercase tracking-widest">Conclusão Diretor</span>
+            <button onClick={() => setFiltroStatusDiretor('')} className={`px-3 py-1 rounded text-[10px] font-black uppercase ${filtroStatusDiretor === '' ? 'bg-emerald-600 text-white' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'}`}>Todos</button>
+            <button onClick={() => setFiltroStatusDiretor('Sim')} className={`px-3 py-1 rounded text-[10px] font-black uppercase ${filtroStatusDiretor === 'Sim' ? 'bg-emerald-600 text-white' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'}`}>Sim</button>
+            <button onClick={() => setFiltroStatusDiretor('Não')} className={`px-3 py-1 rounded text-[10px] font-black uppercase ${filtroStatusDiretor === 'Não' ? 'bg-emerald-600 text-white' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'}`}>Não</button>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-black uppercase tracking-widest">Ano:</span>
+            <select value={filtroAno} onChange={e => setFiltroAno(e.target.value)} className="px-2 py-1 rounded text-[10px] font-black uppercase border border-slate-200">
+              <option value="">Todos</option>
+              {anosUnicos.map(ano => (
+                <option key={ano} value={ano}>{ano}</option>
+              ))}
+            </select>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-black uppercase tracking-widest">Mês:</span>
+            <select value={filtroMes} onChange={e => setFiltroMes(e.target.value)} className="px-2 py-1 rounded text-[10px] font-black uppercase border border-slate-200">
+              <option value="">Todos</option>
+              {mesesUnicos.map(mes => (
+                <option key={mes} value={mes}>{mes}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 bg-white border border-slate-200 p-2 rounded-2xl shadow-sm overflow-x-auto max-w-full scrollbar-thin scrollbar-thumb-slate-200" style={{ WebkitOverflowScrolling: 'touch' }}>
+          <Filter size={16} />
+          <span className="text-[10px] font-black uppercase tracking-widest">Grupo:</span>
+          <div className="flex flex-row gap-2 min-w-fit">
+            <button
+              onClick={() => setSelectedGroup('')}
+              className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all whitespace-nowrap ${selectedGroup === '' ? 'bg-emerald-600 text-white shadow-md' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'}`}
+            >
+              Todos
+            </button>
+            {gruposUnicos.map(group => (
+              <button
+                key={group}
+                onClick={() => setSelectedGroup(group || '')}
+                className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all whitespace-nowrap ${selectedGroup === group ? 'bg-emerald-600 text-white shadow-md' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'}`}
+              >
+                {group}
+              </button>
+            ))}
+          </div>
+        </div>
         <div className="relative w-full sm:w-1/2">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
           <input
@@ -153,130 +159,198 @@ export const PrioritariasList: React.FC<PrioritariasListProps> = ({ tasks }) => 
             onChange={e => setConsulta(e.target.value)}
           />
         </div>
-        <div className="flex items-center gap-2 bg-white border border-slate-200 p-2 rounded-2xl shadow-sm">
-          <Calendar size={18} className="text-emerald-600 ml-2" />
-          <input type="date" value={dataInicial} onChange={e => setDataInicial(e.target.value)} className="text-xs font-bold border-none bg-slate-50 p-2 rounded-lg" />
-          <ArrowRight size={14} className="text-slate-300" />
-          <input type="date" value={dataFinal} onChange={e => setDataFinal(e.target.value)} className="text-xs font-bold border-none bg-slate-50 p-2 rounded-lg" />
-          <button onClick={aplicarFiltro} className="bg-emerald-600 text-white px-4 py-2 rounded-lg text-[10px] font-black uppercase hover:bg-emerald-700 ml-2">FILTRAR</button>
-        </div>
       </div>
-      {loading ? (
-        <div className="text-slate-400">Carregando...</div>
-      ) : dadosFiltrados.length === 0 ? (
-        <div className="text-slate-400">Nenhuma tarefa prioritária encontrada.</div>
-      ) : (
-        <table className="w-full text-left border-collapse">
-          <thead className="bg-slate-50/50">
-            <tr>
-              <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">ID Task</th>
-              <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Nome</th>
-              <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Responsável</th>
-              <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Urgente Diretor</th>
-              <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Prazo Final Diretor</th>
-              <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Comentário Diretor</th>
-              <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Data Conclusão Diretor</th>
-              <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase">Concluída Bitrix</th>
-              <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase text-right">Ação</th>
-            </tr>
-          </thead>
-          <tbody>
-            {dadosFiltrados.map((item) => {
-              // Função para obter STATUS da task
-              let status: string | undefined = undefined;
-              const t = tasksMap[String(item.idtask)];
-              if (t && (t.STATUS || t.status)) status = t.STATUS || t.status;
-              let concluida = '';
-              if (status === '5') concluida = 'SIM';
-              else if (status) concluida = 'NÃO';
-              else if (status === undefined) concluida = 'Não encontrado no Bitrix';
-              else concluida = 'Buscando...';
-              return (
-                <tr key={item.idtask} className="border-b border-slate-100">
-                  <td className="px-6 py-4 text-sm font-bold">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-black text-slate-400">#{item.idtask}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-slate-700">{getNome(item.idtask)}</td>
-                  <td className="px-6 py-4 text-sm text-slate-600">
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-x-auto">
+        {loading ? (
+          <div className="p-8 text-center text-slate-400">Carregando...</div>
+        ) : dadosFiltrados.length === 0 ? (
+          <div className="p-8 text-center text-slate-400">Nenhuma tarefa prioritária encontrada.</div>
+        ) : (
+          <table className="w-full text-left border-collapse">
+            <thead className="bg-slate-50/50">
+              <tr>
+                <th className="px-8 py-4 text-[10px] font-black text-slate-400 uppercase">ID Task</th>
+                <th className="px-8 py-4 text-[10px] font-black text-slate-400 uppercase">Nome</th>
+                <th className="px-8 py-4 text-[10px] font-black text-slate-400 uppercase">Grupo</th>
+                <th className="px-8 py-4 text-[10px] font-black text-slate-400 uppercase">Responsável</th>
+                <th className="px-8 py-4 text-[10px] font-black text-slate-400 uppercase">Prazo Prioritária</th>
+                <th className="px-8 py-4 text-[10px] font-black text-slate-400 uppercase">Concluída Bitrix</th>
+                <th className="px-8 py-4 text-[10px] font-black text-slate-400 uppercase">Ação</th>
+              </tr>
+              <tr>
+                <th className="px-8 py-2">
+                  <input type="text" className="w-full text-xs rounded border border-slate-200 px-2 py-1" placeholder="Filtrar ID" value={consulta} onChange={e => setConsulta(e.target.value)} />
+                </th>
+                <th className="px-8 py-2">
+                  <input type="text" className="w-full text-xs rounded border border-slate-200 px-2 py-1" placeholder="Filtrar Nome" value={consulta} onChange={e => setConsulta(e.target.value)} />
+                </th>
+                <th className="px-8 py-2">
+                  <select className="w-full text-xs rounded border border-slate-200 px-2 py-1" value={selectedGroup} onChange={e => setSelectedGroup(e.target.value)}>
+                    <option value="">Todos</option>
+                    {gruposUnicos.map(group => (
+                      <option key={group} value={group}>{group}</option>
+                    ))}
+                  </select>
+                </th>
+                <th className="px-8 py-2">
+                  <input type="text" className="w-full text-xs rounded border border-slate-200 px-2 py-1" placeholder="Filtrar Responsável" value={consulta} onChange={e => setConsulta(e.target.value)} />
+                </th>
+                <th className="px-8 py-2">
+                  <select className="w-full text-xs rounded border border-slate-200 px-2 py-1" value={filtroAno} onChange={e => setFiltroAno(e.target.value)}>
+                    <option value="">Ano</option>
+                    {anosUnicos.map(ano => (
+                      <option key={ano} value={ano}>{ano}</option>
+                    ))}
+                  </select>
+                  <select className="w-full text-xs rounded border border-slate-200 px-2 py-1 mt-1" value={filtroMes} onChange={e => setFiltroMes(e.target.value)}>
+                    <option value="">Mês</option>
+                    {mesesUnicos.map(mes => (
+                      <option key={mes} value={mes}>{mes}</option>
+                    ))}
+                  </select>
+                </th>
+                <th className="px-8 py-2">
+                  <select className="w-full text-xs rounded border border-slate-200 px-2 py-1" value={filtroStatusDiretor} onChange={e => setFiltroStatusDiretor(e.target.value)}>
+                    <option value="">Todos</option>
+                    <option value="Sim">Sim</option>
+                    <option value="Não">Não</option>
+                  </select>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {dadosFiltrados.map((item) => (
+                <tr key={item.idtask} className="border-t hover:bg-gray-50 align-top transition-colors">
+                  <td className="px-8 py-4 text-sm font-black text-slate-500 break-words max-w-[80px]">#{item.idtask}</td>
+                  <td className="px-8 py-4 text-sm text-slate-800 font-bold break-words max-w-[220px]">{item.title}</td>
+                  <td className="px-8 py-4 text-sm text-slate-700 font-bold break-words max-w-[180px]">{item.nomeGrupo}</td>
+                  <td className="px-8 py-4 text-sm text-slate-600">
                     <div className="flex items-center gap-2">
                       <span className="w-7 h-7 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-700 shrink-0">
                         <UserIcon size={14} />
                       </span>
-                      <span>{getResponsavel(item.idtask)}</span>
+                      <span className="text-[11px] font-bold text-slate-600 break-words max-w-[120px]">{item.nomeResponsavel}</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-sm font-bold text-rose-600">{item.prioridade ? 'SIM' : 'NÃO'}</td>
-                  <td className="px-6 py-4 text-sm font-bold text-slate-600">{item.dataprazofinal ? new Date(item.dataprazofinal).toLocaleDateString('pt-BR') : '--'}</td>
-                  <td className="px-6 py-4 text-sm text-slate-700">{item.comentario || '--'}</td>
-                  <td className="px-6 py-4 text-sm">
-                    {editandoId === item.idtask ? (
-                      <input
-                        type="date"
-                        value={editandoValor}
-                        onChange={async (e) => {
-                          const novaData = e.target.value;
-                          setEditandoValor(novaData);
-                          setSavingId(item.idtask);
-                          await updateBAtividadeG(item.idtask, { dataconclusao: novaData || null });
-                          setDados(prev => {
-                            const novos = prev.map(d => d.idtask === item.idtask ? { ...d, dataconclusao: novaData || undefined } : d);
-                            setTimeout(aplicarFiltro, 0); // Garante atualização do filtro após o setDados
-                            return novos;
-                          });
-                          setSavingId(null);
-                          setEditandoId(null);
-                        }}
-                        className="border rounded px-2 py-1 text-xs"
-                        disabled={savingId === item.idtask}
-                        autoFocus
-                        onKeyDown={e => {
-                          if (e.key === 'Backspace' || e.key === 'Delete') {
-                            setEditandoValor('');
-                          }
-                        }}
-                        placeholder=""
-                      />
+                  <td className="px-8 py-4 text-sm font-bold text-slate-600">
+                    {item.dataprazofinal ? (() => {
+                      const dt = new Date(item.dataprazofinal);
+                      const meses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+                      return `${meses[dt.getMonth()]}-${dt.getFullYear()}`;
+                    })() : '--'}
+                  </td>
+                  <td className="px-8 py-4 text-sm font-bold text-emerald-700">{item.concluidaBitrix}</td>
+                  <td className="px-8 py-4 text-sm">
+                    {item.statusDiretor === 'Sim' ? (
+                      <button onClick={() => abrirModal(item)} className="bg-yellow-400 hover:bg-yellow-500 text-white px-4 py-2 rounded-xl font-extrabold text-xs shadow transition-all uppercase tracking-widest">Concluída</button>
                     ) : (
-                      <span
-                        onClick={() => {
-                          setEditandoId(item.idtask);
-                          setEditandoValor(item.dataconclusao ? item.dataconclusao.split('T')[0] : '');
-                        }}
-                        style={{ cursor: 'pointer', color: '#2563eb', textDecoration: 'underline' }}
-                      >
-                        {item.dataconclusao ? (() => {
-                          const dataStr = item.dataconclusao.split('T')[0];
-                          const [ano, mes, dia] = dataStr.split('-');
-                          return `${dia}/${mes}/${ano}`;
-                        })() : '---'}
-                      </span>
+                      <button onClick={() => abrirModal(item)} className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl font-extrabold text-xs shadow transition-all uppercase tracking-widest">Concluir</button>
                     )}
                   </td>
-                  <td className="px-6 py-4 text-sm font-bold text-emerald-700">{concluida}</td>
-                  <td className="px-6 py-4 text-sm text-right">
-                    <button onClick={() => handleDelete(item.idtask)} className="text-red-600 hover:text-red-800"><Trash2 size={16} /></button>
-                  </td>
                 </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      )}
-      {/* Modal de confirmação de exclusão */}
-      {confirmDelete.open && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-2xl shadow-xl max-w-sm w-full mx-4">
-            <h3 className="text-lg font-bold mb-4 text-rose-700 flex items-center gap-2"><Trash2 size={20}/> Confirmar Exclusão</h3>
-            <p className="mb-6">Tem certeza que deseja remover a prioridade desta tarefa?</p>
-            <div className="flex gap-2">
-              <button onClick={confirmDeleteAction} className="bg-rose-600 text-white px-4 py-2 rounded-lg flex-1">Excluir</button>
-              <button onClick={cancelDeleteAction} className="bg-gray-500 text-white px-4 py-2 rounded-lg flex-1">Cancelar</button>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+      {/* Modal lateral customizada */}
+      {modalAberto && atividadeSelecionada && (
+        <div className="fixed inset-0 z-50 flex justify-end">
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={fecharModal} />
+          <div className="relative w-full max-w-lg bg-white h-full shadow-2xl flex flex-col animate-in slide-in-from-right duration-500 ease-out rounded-l-3xl border-l-4 border-emerald-600">
+            <div className="p-8 border-b border-slate-100 flex items-start justify-between bg-gradient-to-r from-emerald-50 to-white">
+              <div>
+                <span className="text-xs font-black text-emerald-700 uppercase tracking-widest">Aprovação de Atividade</span>
+                <h2 className="text-2xl font-black text-slate-900 leading-tight mt-2 mb-1">{atividadeSelecionada.title}</h2>
+                <div className="text-xs text-slate-500 font-bold uppercase tracking-widest">ID: {atividadeSelecionada.idtask}</div>
+              </div>
+              <button onClick={fecharModal} className="p-2.5 hover:bg-white hover:shadow-sm rounded-xl transition-all border border-transparent hover:border-slate-200" title="Fechar">
+                <span className="text-slate-400 text-xl">×</span>
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-8 space-y-6">
+              {atividadeSelecionada.dataconclusao && (
+                <div className="mb-4 p-4 bg-yellow-50 border-l-4 border-yellow-400 text-yellow-800 font-bold rounded-xl flex items-center gap-2 animate-in fade-in">
+                  <svg width="20" height="20" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="#facc15" strokeWidth="2" opacity="0.2"/><path d="M8 12l2 2 4-4" stroke="#facc15" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  Esta atividade já foi aprovada!
+                </div>
+              )}
+              <div className="mb-2 flex gap-2 items-center">
+                <span className="text-xs font-bold text-slate-500 uppercase">ID:</span>
+                <span className="text-sm font-bold text-slate-700">{atividadeSelecionada.id}</span>
+              </div>
+              <div className="mb-2 flex gap-2 items-center">
+                <span className="text-xs font-bold text-slate-500 uppercase">ID Task:</span>
+                <span className="text-sm font-bold text-slate-700">{atividadeSelecionada.idtask}</span>
+              </div>
+              <div className="mb-2 flex gap-2 items-center">
+                <span className="text-xs font-bold text-slate-500 uppercase">Título:</span>
+                <span className="text-sm font-bold text-slate-700">{atividadeSelecionada.title}</span>
+              </div>
+              <div className="mb-2 flex gap-2 items-center">
+                <span className="text-xs font-bold text-slate-500 uppercase">Grupo:</span>
+                <span className="text-sm font-bold text-emerald-700">{atividadeSelecionada.nomeGrupo}</span>
+              </div>
+              <div className="mb-2 flex gap-2 items-center">
+                <span className="text-xs font-bold text-slate-500 uppercase">Responsável:</span>
+                <span className="flex items-center gap-2">
+                  <span className="w-7 h-7 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-700 shrink-0">
+                    <UserIcon size={14} />
+                  </span>
+                  <span className="text-sm font-bold text-slate-700">{atividadeSelecionada.nomeResponsavel}</span>
+                </span>
+              </div>
+              <div className="mb-2 flex gap-2 items-center">
+                <span className="text-xs font-bold text-slate-500 uppercase">Prazo Prioritária:</span>
+                <span className="text-sm font-bold text-slate-700">{atividadeSelecionada.dataprazofinal ? new Date(atividadeSelecionada.dataprazofinal).toLocaleDateString('pt-BR') : '--'}</span>
+              </div>
+              <div className="mb-2 flex gap-2 items-center">
+                <span className="text-xs font-bold text-slate-500 uppercase">Concluída Bitrix:</span>
+                <span className="text-sm font-bold text-emerald-700">{atividadeSelecionada.concluidaBitrix}</span>
+              </div>
+              <div className="mb-2 flex gap-2 items-center">
+                <span className="text-xs font-bold text-slate-500 uppercase">Conclusão Diretor:</span>
+                <span className="text-sm font-bold text-slate-700">{atividadeSelecionada.statusDiretor}</span>
+              </div>
+              <div className="mb-2 flex gap-2 items-center">
+                <span className="text-xs font-bold text-slate-500 uppercase">Data Conclusão Diretor:</span>
+                <span className="text-sm font-bold text-slate-700">{atividadeSelecionada.dataConclusaoDiretor ? new Date(atividadeSelecionada.dataConclusaoDiretor).toLocaleDateString('pt-BR') : '--'}</span>
+              </div>
+              <div className="mb-6">
+                <label className="block text-xs font-black text-slate-500 uppercase mb-1">Data Aprovação</label>
+                <input
+                  type="date"
+                  className="border border-emerald-200 rounded-xl px-4 py-2 text-sm font-bold focus:ring-2 focus:ring-emerald-500 outline-none transition-all shadow-sm"
+                  value={dataConclusao}
+                  onChange={e => setDataConclusao(e.target.value)}
+                  disabled={salvando}
+                />
+                {atividadeSelecionada.dataconclusao && (
+                  <div className="mt-2 text-xs text-emerald-700 font-bold">
+                    Data já aprovada: {new Date(atividadeSelecionada.dataconclusao).toLocaleDateString('pt-BR')}
+                  </div>
+                )}
+              </div>
+              {salvando && (
+                <div className="flex items-center gap-2 text-emerald-700 font-bold text-xs animate-pulse">
+                  <svg className="animate-spin" width="16" height="16" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" opacity="0.2"/><path d="M4 12a8 8 0 018-8" stroke="currentColor" strokeWidth="4" strokeLinecap="round"/></svg>
+                  Salvando alteração...
+                </div>
+              )}
+            </div>
+            <div className="flex gap-2 p-8 border-t border-slate-100 bg-gradient-to-r from-white to-emerald-50">
+              <button
+                onClick={salvarDataConclusao}
+                disabled={salvando || atividadeSelecionada.dataconclusao}
+                className={`flex-1 ${atividadeSelecionada.dataconclusao ? 'bg-yellow-400 text-white cursor-not-allowed opacity-90' : 'bg-emerald-600 hover:bg-emerald-700 text-white'} py-3 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-emerald-100 transition-all disabled:opacity-50`}
+              >
+                {atividadeSelecionada.dataconclusao ? 'Concluída' : 'Concluir'}
+              </button>
+              <button onClick={fecharModal} className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-3 rounded-2xl font-black text-xs uppercase tracking-widest border border-slate-200 transition-all">Cancelar</button>
             </div>
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 };

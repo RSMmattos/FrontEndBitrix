@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { User as UserIcon } from 'lucide-react';
 import { API_BASE_URL } from '../constants';
 
 interface DetalhesAtividadesModalProps {
@@ -125,8 +126,6 @@ const DetalhesAtividadesModal: React.FC<DetalhesAtividadesModalProps> = ({ open,
                   <th className="px-3 py-2 text-xs font-bold text-gray-500 uppercase">ID Task</th>
                   <th className="px-3 py-2 text-xs font-bold text-gray-500 uppercase">Descrição</th>
                   <th className="px-3 py-2 text-xs font-bold text-gray-500 uppercase">Responsável</th>
-                  <th className="px-3 py-2 text-xs font-bold text-gray-500 uppercase">Comentário</th>
-                  <th className="px-3 py-2 text-xs font-bold text-gray-500 uppercase">Prioridade</th>
                   <th className="px-3 py-2 text-xs font-bold text-gray-500 uppercase">Prazo Final</th>
                   <th className="px-3 py-2 text-xs font-bold text-gray-500 uppercase">Data Conclusão</th>
                 </tr>
@@ -139,9 +138,14 @@ const DetalhesAtividadesModal: React.FC<DetalhesAtividadesModalProps> = ({ open,
                     <tr key={idx} className="border-t">
                       <td className="px-3 py-2 text-sm">{r.idtask}</td>
                       <td className="px-3 py-2 text-sm">{task?.title || r.titulo || r.titulo_task || <span className="text-slate-400">-</span>}</td>
-                      <td className="px-3 py-2 text-sm">{task?.responsible?.name || r.responsavel || r.responsavel_nome || <span className="text-slate-400">-</span>}</td>
-                      <td className="px-3 py-2 text-sm">{r.comentario || <span className="text-slate-400">-</span>}</td>
-                      <td className="px-3 py-2 text-sm text-center">{r.prioridade ? 'Sim' : 'Não'}</td>
+                      <td className="px-3 py-2 text-sm">
+                        <span className="flex items-center gap-2">
+                          <span className="w-6 h-6 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-700 shrink-0">
+                            <UserIcon size={14} />
+                          </span>
+                          <span>{task?.responsible?.name || r.responsavel || r.responsavel_nome || <span className="text-slate-400">-</span>}</span>
+                        </span>
+                      </td>
                       <td className="px-3 py-2 text-sm">{r.dataprazofinal ? new Date(r.dataprazofinal).toLocaleDateString() : '-'}</td>
                       <td className="px-3 py-2 text-sm">{r.dataconclusao ? new Date(r.dataconclusao).toLocaleDateString() : '-'}</td>
                     </tr>

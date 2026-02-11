@@ -59,20 +59,14 @@ export const GroupLinkList: React.FC<GroupLinkListProps> = ({ hideAddButton }) =
 				setError('Este Centro de Custo já está vinculado a um Grupo.');
 				return;
 			}
-			if (groupLinks.some(link => link.idgrupobitrix === grupoSelecionado)) {
-				setError('Este Grupo já está vinculado a um Centro de Custo.');
-				return;
-			}
+			// Permite múltiplos centros de custo para o mesmo grupo
 		} else {
 			// Se for edição, permitir manter o mesmo vínculo, mas não permitir duplicidade
 			if (groupLinks.some(link => link.codccusto === centroSelecionado && link.codccusto !== editingLink.codccusto)) {
 				setError('Este Centro de Custo já está vinculado a um Grupo.');
 				return;
 			}
-			if (groupLinks.some(link => link.idgrupobitrix === grupoSelecionado && link.codccusto !== editingLink.codccusto)) {
-				setError('Este Grupo já está vinculado a um Centro de Custo.');
-				return;
-			}
+			// Permite múltiplos centros de custo para o mesmo grupo na edição também
 		}
 		try {
 			const payload = {

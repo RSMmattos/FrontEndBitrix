@@ -10,7 +10,7 @@ const VariaveisPage: React.FC = () => {
   return (
     <div className="p-6">
       <div className="flex items-center mb-4">
-        <label className="mr-2 font-semibold">Ano:</label>
+        <label className="mr-2 font-semibold">ANO SAFRA:</label>
         <input
           type="number"
           className="border rounded px-2 py-1 w-24"

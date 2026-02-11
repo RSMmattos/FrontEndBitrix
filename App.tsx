@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { API_BASE_URL } from './constants';
 import { fetchUsuariosOnline, UsuarioOnline } from './services/usuariosOnlineService';
 import { BitrixTask, TaskStatus, TaskPriority, User } from './types';
 import { updateTask } from './services/bitrixService';
@@ -162,7 +163,7 @@ const App: React.FC = () => {
         if (Object.keys(bitrixFields).length > 0) {
           await updateTask(id, bitrixFields);
         }
-        // Salva na batividadeg se necessário
+        // Salva na batividadeg
         const batividadegFields: any = {};
         // Busca taskObj uma vez para usar em todos os campos
         const taskObj = tasks.find(t => t.ID === id);
@@ -173,10 +174,22 @@ const App: React.FC = () => {
           batividadegFields.prioridade = (taskObj && typeof taskObj.batividadeg_prioridade !== 'undefined') ? taskObj.batividadeg_prioridade : false;
         }
         if ('batividadeg_comentario' in changes) batividadegFields.comentario = changes.batividadeg_comentario;
-        if ('batividadeg_dataprazofinal' in changes) batividadegFields.dataprazofinal = changes.batividadeg_dataprazofinal;
-        // Garante que idgrupobitrix será enviado
+        if ('batividadeg_dataprazofinal' in changes) {
+          // Corrige fuso: input date vem sem hora, Date interpreta como UTC e pode subtrair um dia
+          const rawDate = changes.batividadeg_dataprazofinal;
+          if (rawDate && typeof rawDate === 'string') {
+            // Garante formato yyyy-MM-dd
+            const [year, month, day] = rawDate.split('-');
+            batividadegFields.dataprazofinal = `${year}-${month}-${day}`;
+          } else {
+            batividadegFields.dataprazofinal = rawDate;
+          }
+        }
+        // Garante que idgrupobitrix será sempre enviado (mesmo se não houver alteração)
         if (taskObj && typeof taskObj.idgrupobitrix !== 'undefined') {
           batividadegFields.idgrupobitrix = taskObj.idgrupobitrix;
+        } else if (changes.idgrupobitrix !== undefined) {
+          batividadegFields.idgrupobitrix = changes.idgrupobitrix;
         }
         if (Object.keys(batividadegFields).length > 0) {
           try {
@@ -508,7 +521,7 @@ const App: React.FC = () => {
           ) : activeTab === 'perfil-usuario' ? (
             <PerfilUsuario idusuario={currentUser?.idusuario || currentUser?.codusuario || ''} />
           ) : activeTab === 'prioritarias' ? (
-            <PrioritariasList tasks={tasks} />
+            <PrioritariasList />
           ) : false ? (
             null
           ) : activeTab === 'variaveis' ? (
