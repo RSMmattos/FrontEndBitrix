@@ -145,11 +145,17 @@ export const EditableTaskRow: React.FC<EditableTaskRowProps> = ({
               : (task.batividadeg_dataprazofinal || '');
             let prazoFormatado = '';
             if (prazo) {
-              try {
-                const data = new Date(prazo);
-                prazoFormatado = `${String(data.getDate()).padStart(2, '0')}/${String(data.getMonth()+1).padStart(2, '0')}/${data.getFullYear()}`;
-              } catch {
-                prazoFormatado = prazo;
+              // Corrige para não subtrair um dia: pega direto do input yyyy-MM-dd
+              if (/^\d{4}-\d{2}-\d{2}$/.test(prazo)) {
+                const [ano, mes, dia] = prazo.split('-');
+                prazoFormatado = `${dia}/${mes}/${ano}`;
+              } else {
+                try {
+                  const data = new Date(prazo);
+                  prazoFormatado = `${String(data.getDate()).padStart(2, '0')}/${String(data.getMonth()+1).padStart(2, '0')}/${data.getFullYear()}`;
+                } catch {
+                  prazoFormatado = prazo;
+                }
               }
               onChange(task.ID, 'batividadeg_comentario', `Tarefa Prioritária - deve ser concluida (${value.toLowerCase()}) até ${prazoFormatado}`);
             }
