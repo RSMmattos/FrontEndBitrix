@@ -104,7 +104,7 @@ const DetalhesAtividadesModal: React.FC<DetalhesAtividadesModalProps> = ({ open,
                         <span className="w-6 h-6 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-700 shrink-0">
                           <UserIcon size={14} />
                         </span>
-                        <span>{r.responsavel_nome || r.responsavel || <span className="text-slate-400">-</span>}</span>
+                        <NomeResponsavelTask idtask={r.idtask} />
                       </span>
                     </td>
 
@@ -121,14 +121,45 @@ const DetalhesAtividadesModal: React.FC<DetalhesAtividadesModalProps> = ({ open,
   );
 };
 
+// Busca o nome do responsável a partir do responsibleId da task (usando a API de task e depois a de usuário)
+function NomeResponsavelTask({ idtask }: { idtask: number }) {
+  const [responsibleId, setResponsibleId] = React.useState<number | null>(null);
+  const [nome, setNome] = React.useState<string | null>(null);
+  React.useEffect(() => {
+    if (!idtask) return;
+    axios.get(`${API_BASE_URL}/api/bbitrixtask/${idtask}`)
+      .then(res => {
+        const rid = res.data?.responsibleId;
+        setResponsibleId(rid);
+        if (rid) {
+          axios.get(`${API_BASE_URL}/api/bbitrixuser/${rid}`)
+            .then(resUser => setNome(resUser.data?.nome || null))
+            .catch(() => setNome(null));
+        } else {
+          setNome(null);
+        }
+      })
+      .catch(() => {
+        setResponsibleId(null);
+        setNome(null);
+      });
+  }, [idtask]);
+  return <>{nome ? nome : <span className="text-slate-400">-</span>}</>;
+}
+
 // Componente para buscar e exibir o título da task pela API /api/bbitrixtask/{id}
+// Busca o título da task e o nome do responsável
 function TituloTask({ idtask }: { idtask: number }) {
   const [titulo, setTitulo] = React.useState<string | null>(null);
   React.useEffect(() => {
     if (!idtask) return;
     axios.get(`${API_BASE_URL}/api/bbitrixtask/${idtask}`)
-      .then(res => setTitulo(res.data?.title || null))
-      .catch(() => setTitulo(null));
+      .then(res => {
+        setTitulo(res.data?.title || null);
+      })
+      .catch(() => {
+        setTitulo(null);
+      });
   }, [idtask]);
   return <>{titulo ? titulo : <span className="text-slate-400">-</span>}</>;
 }
