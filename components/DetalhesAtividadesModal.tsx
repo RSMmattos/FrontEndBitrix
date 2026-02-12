@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+// ...existing code...
 import { User as UserIcon } from 'lucide-react';
 import { API_BASE_URL } from '../constants';
 
@@ -94,7 +96,9 @@ const DetalhesAtividadesModal: React.FC<DetalhesAtividadesModalProps> = ({ open,
                 {registros.map((r, idx) => (
                   <tr key={idx} className="border-t">
                     <td className="px-3 py-2 text-sm">{r.idtask}</td>
-                    <td className="px-3 py-2 text-sm">{r.titulo_task || r.titulo || <span className="text-slate-400">-</span>}</td>
+                    <td className="px-3 py-2 text-sm">
+                      <TituloTask idtask={r.idtask} />
+                    </td>
                     <td className="px-3 py-2 text-sm">
                       <span className="flex items-center gap-2">
                         <span className="w-6 h-6 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-700 shrink-0">
@@ -103,6 +107,7 @@ const DetalhesAtividadesModal: React.FC<DetalhesAtividadesModalProps> = ({ open,
                         <span>{r.responsavel_nome || r.responsavel || <span className="text-slate-400">-</span>}</span>
                       </span>
                     </td>
+
                     <td className="px-3 py-2 text-sm">{r.dataprazofinal ? new Date(r.dataprazofinal).toLocaleDateString() : '-'}</td>
                     <td className="px-3 py-2 text-sm">{r.dataconclusao ? new Date(r.dataconclusao).toLocaleDateString() : '-'}</td>
                   </tr>
@@ -115,5 +120,17 @@ const DetalhesAtividadesModal: React.FC<DetalhesAtividadesModalProps> = ({ open,
     </div>
   );
 };
+
+// Componente para buscar e exibir o título da task pela API /api/bbitrixtask/{id}
+function TituloTask({ idtask }: { idtask: number }) {
+  const [titulo, setTitulo] = React.useState<string | null>(null);
+  React.useEffect(() => {
+    if (!idtask) return;
+    axios.get(`${API_BASE_URL}/api/bbitrixtask/${idtask}`)
+      .then(res => setTitulo(res.data?.title || null))
+      .catch(() => setTitulo(null));
+  }, [idtask]);
+  return <>{titulo ? titulo : <span className="text-slate-400">-</span>}</>;
+}
 
 export default DetalhesAtividadesModal;
