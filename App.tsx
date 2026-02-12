@@ -243,6 +243,8 @@ const App: React.FC = () => {
   const filteredTasks = useMemo(() => {
     let result = tasks;
     const hasSearch = !!searchTerm.trim();
+    // Cria um mapa de tarefas salvas para garantir merge correto
+    const savedTasksMap = new Map(tasks.map(t => [t.ID, t]));
     if (hasSearch) {
       if (allTasks) {
         const low = searchTerm.toLowerCase();
@@ -250,7 +252,16 @@ const App: React.FC = () => {
           t.TITLE.toLowerCase().includes(low) ||
           t.ID.includes(low) ||
           (t.RESPONSIBLE_NAME && t.RESPONSIBLE_NAME.toLowerCase().includes(low))
-        );
+        ).map(t => {
+          // Merge com dados salvos da batividadeg
+          const saved = savedTasksMap.get(t.ID);
+          return {
+            ...t,
+            batividadeg_prioridade: saved?.batividadeg_prioridade ?? t.batividadeg_prioridade,
+            batividadeg_dataprazofinal: saved?.batividadeg_dataprazofinal ?? t.batividadeg_dataprazofinal,
+            batividadeg_comentario: saved?.batividadeg_comentario ?? t.batividadeg_comentario
+          };
+        });
       }
       return [];
     } else {
@@ -262,7 +273,12 @@ const App: React.FC = () => {
       } else if (statusFilter === 'not-completed') {
         result = result.filter(t => t.STATUS !== '5');
       }
-      return result;
+      return result.map(t => ({
+        ...t,
+        batividadeg_prioridade: t.batividadeg_prioridade,
+        batividadeg_dataprazofinal: t.batividadeg_dataprazofinal,
+        batividadeg_comentario: t.batividadeg_comentario
+      }));
     }
   }, [tasks, searchTerm, selectedGroup, statusFilter, allTasks]);
   // Busca global ao digitar na pesquisa
