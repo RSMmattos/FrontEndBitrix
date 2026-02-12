@@ -23,12 +23,14 @@ export const GroupLinkList: React.FC<GroupLinkListProps> = ({ hideAddButton }) =
 		setLoading(true);
 		setError(null);
 		try {
-			const [links, centers] = await Promise.all([
+			const [links, centers, bitrix] = await Promise.all([
 				fetch('http://10.0.0.6:3001/api/vinculosgrupos').then(r => r.json()),
-				fetch(`${API_BASE_URL}/api/gccusto`).then(r => r.json())
+				fetch(`${API_BASE_URL}/api/gccusto`).then(r => r.json()),
+				fetch('http://10.0.0.6:3001/api/bbitrixgrupo').then(r => r.json())
 			]);
 			setGroupLinks(links);
 			setCostCenters(centers.filter((cc: CostCenter) => cc.ativo));
+			setBitrixGroups(Array.isArray(bitrix) ? bitrix : []);
 		} catch (err: any) {
 			setError('Erro ao carregar dados: ' + (err.message || err.toString()));
 		}
@@ -76,10 +78,10 @@ export const GroupLinkList: React.FC<GroupLinkListProps> = ({ hideAddButton }) =
 			setEditingLink(null);
 			setFormData({ codccusto: '', idtask: '' });
 			setSuccess(editingLink ? 'Vínculo editado com sucesso!' : 'Vínculo criado com sucesso!');
-			setTimeout(() => setSuccess(null), 3000);
-			// Atualiza lista
-			const links = await fetch(`${API_BASE_URL}/api/bgcatividade`).then(r => r.json());
-			setGroupLinks(links);
+			setTimeout(() => {
+				setSuccess(null);
+				loadAll();
+			}, 1000);
 		} catch (err: any) {
 			setError('Erro ao salvar: ' + (err.message || err.toString()));
 		}
@@ -98,10 +100,10 @@ export const GroupLinkList: React.FC<GroupLinkListProps> = ({ hideAddButton }) =
 			const response = await fetch(`${API_BASE_URL}/api/bgcatividade/${confirmDelete.codccusto}`, { method: 'DELETE' });
 			if (!response.ok) throw new Error('Erro ao excluir');
 			setSuccess('Vínculo excluído com sucesso!');
-			setTimeout(() => setSuccess(null), 3000);
-			// Atualiza lista após exclusão
-			const links = await fetch(`${API_BASE_URL}/api/bgcatividade`).then(r => r.json());
-			setGroupLinks(links);
+			setTimeout(() => {
+				setSuccess(null);
+				loadAll();
+			}, 1000);
 		} catch (err: any) {
 			setError('Erro ao excluir: ' + (err.message || err.toString()));
 		}
@@ -192,7 +194,7 @@ export const GroupLinkList: React.FC<GroupLinkListProps> = ({ hideAddButton }) =
 										<option value="">Selecione...</option>
 										{bitrixGroups.length > 0 ? (
 											bitrixGroups.map((group, idx) => (
-												<option key={group.ID || idx} value={group.ID}>{group.ID} - {group.NAME}</option>
+												<option key={group.groupId || idx} value={group.groupId}>{group.groupId} - {group.nome}</option>
 											))
 										) : (
 											<option disabled value="">Nenhum grupo encontrado</option>
