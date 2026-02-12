@@ -15,7 +15,23 @@ function formatarDataLocal(dataStr: string) {
   return dt.toLocaleDateString('pt-BR');
 }
 // Modal lateral customizada (sem react-modal)
-import { Search, Filter, User as UserIcon } from 'lucide-react';
+import { Search, Filter, User as UserIcon, Trash2 } from 'lucide-react';
+  // Função para excluir atividade
+  const excluirAtividade = async (idtask: string | number) => {
+    if (!window.confirm('Deseja realmente excluir esta atividade?')) return;
+    try {
+      const response = await fetch(`http://10.0.0.6:3001/api/batividadeg/${idtask}`, { method: 'DELETE' });
+      const result = await response.json();
+      if (!response.ok) {
+        alert(result.message || 'Erro ao excluir');
+      } else {
+        alert(result.message || 'Excluído com sucesso');
+        await atualizarDados();
+      }
+    } catch (e) {
+      alert('Erro ao excluir: ' + e.message);
+    }
+  };
 
 export const PrioritariasList: React.FC = () => {
   const [dados, setDados] = useState<any[]>([]);
@@ -261,12 +277,15 @@ export const PrioritariasList: React.FC = () => {
                     })() : '--'}
                   </td>
                   <td className="px-8 py-4 text-sm font-bold text-emerald-700">{item.concluidaBitrix}</td>
-                  <td className="px-8 py-4 text-sm">
+                  <td className="px-8 py-4 text-sm flex gap-2">
                     {item.statusDiretor === 'Sim' ? (
                       <button onClick={() => abrirModal(item)} className="bg-yellow-400 hover:bg-yellow-500 text-white px-4 py-2 rounded-xl font-extrabold text-xs shadow transition-all uppercase tracking-widest">Concluída</button>
                     ) : (
                       <button onClick={() => abrirModal(item)} className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl font-extrabold text-xs shadow transition-all uppercase tracking-widest">Concluir</button>
                     )}
+                    <button onClick={() => excluirAtividade(item.idtask)} className="bg-rose-600 hover:bg-rose-700 text-white px-2 py-2 rounded-xl" title="Excluir atividade">
+                      <Trash2 size={18} />
+                    </button>
                   </td>
                 </tr>
               ))}
