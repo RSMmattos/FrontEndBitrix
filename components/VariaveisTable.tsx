@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { fetchBitrixGroupNameById } from '../services/bitrixGroupNameService';
 // Função utilitária para buscar grupos Bitrix
 async function fetchBitrixGroups(): Promise<any[]> {
   try {
@@ -52,8 +53,9 @@ const VariaveisTable: React.FC<VariaveisTableProps> = ({ ano }) => {
       .finally(() => setLoading(false));
   }, [ano]);
 
-  if (loading) return <div className="p-8 text-center">Carregando...</div>;
-  if (error) return <div className="p-8 text-center text-red-600">{error}</div>;
+
+  // Novo estado para nomes dos grupos Bitrix (deve ser declarado antes de qualquer return)
+  const [groupNames, setGroupNames] = useState<{ [key: number]: string | null }>({});
 
   // Suporte a resposta como array simples ou objeto com registros
   let registros: any[] = [];
@@ -62,6 +64,23 @@ const VariaveisTable: React.FC<VariaveisTableProps> = ({ ano }) => {
   } else if (data && Array.isArray(data.registros)) {
     registros = data.registros;
   }
+
+  useEffect(() => {
+    // Para cada registro, buscar o nome do grupo se ainda não estiver no cache
+    const missingIds = registros
+      .map((row) => Number(row.idgrupobitrix))
+      .filter((id) => id && !(id in groupNames));
+    if (missingIds.length > 0) {
+      missingIds.forEach(async (id) => {
+        const nome = await fetchBitrixGroupNameById(id);
+        setGroupNames((prev) => ({ ...prev, [id]: nome }));
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [registros]);
+
+  if (loading) return <div className="p-8 text-center">Carregando...</div>;
+  if (error) return <div className="p-8 text-center text-red-600">{error}</div>;
   if (!registros || registros.length === 0) return <div className="p-8 text-center">Nenhum dado encontrado.</div>;
 
   // Extrai colunas dinâmicas
@@ -89,14 +108,11 @@ const VariaveisTable: React.FC<VariaveisTableProps> = ({ ano }) => {
           <tbody>
             {registros.map((row, idx) => {
               const idGrupo = Number(row.idgrupobitrix);
-              const bitrixGroup = Array.isArray(bitrixGroups)
-                ? bitrixGroups.find(bg => bg && Number(bg.ID) === idGrupo)
-                : undefined;
-              const nomeGrupo = bitrixGroup?.NAME || '';
+              const nomeGrupo = groupNames[idGrupo];
               return (
                 <tr key={idx} className="border-t hover:bg-gray-50 align-top">
                   <td className="px-4 py-3 text-sm">{row.codccusto_nome}</td>
-                  <td className="px-4 py-3 text-sm">{nomeGrupo ? `${idGrupo} - ${nomeGrupo}` : `Grupo não encontrado (ID: ${idGrupo})`}</td>
+                  <td className="px-4 py-3 text-sm">{nomeGrupo ? `${idGrupo} - ${nomeGrupo}` : `Buscando... (ID: ${idGrupo})`}</td>
                   <td className="px-4 py-3 text-sm text-center font-bold">
                     <button
                       className="text-emerald-700 underline hover:text-emerald-900"

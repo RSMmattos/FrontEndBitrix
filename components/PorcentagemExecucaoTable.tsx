@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { fetchBitrixGroupNameById } from '../services/bitrixGroupNameService';
 import axios from 'axios';
 import { API_BASE_URL } from '../constants';
 
@@ -41,6 +42,23 @@ const PorcentagemExecucaoTable: React.FC<PorcentagemExecucaoTableProps> = ({ ano
     }
   }
 
+
+  // Novo estado para nomes dos grupos Bitrix (deve ser declarado antes de qualquer return)
+  const [groupNames, setGroupNames] = useState<{ [key: number]: string | null }>({});
+
+  useEffect(() => {
+    const missingIds = data
+      .map((row) => Number(row.idgrupobitrix))
+      .filter((id) => id && !(id in groupNames));
+    if (missingIds.length > 0) {
+      missingIds.forEach(async (id) => {
+        const nome = await fetchBitrixGroupNameById(id);
+        setGroupNames((prev) => ({ ...prev, [id]: nome }));
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data]);
+
   if (loading) return <div className="p-8 text-center">Carregando...</div>;
   if (error) return <div className="p-8 text-center text-red-600">{error}</div>;
   if (!data || data.length === 0) return <div className="p-8 text-center">Nenhum dado encontrado.</div>;
@@ -66,17 +84,14 @@ const PorcentagemExecucaoTable: React.FC<PorcentagemExecucaoTableProps> = ({ ano
         <tbody>
           {data.map((row, idx) => {
             const idGrupo = Number(row.idgrupobitrix);
-            const bitrixGroup = Array.isArray(bitrixGroups)
-              ? bitrixGroups.find(bg => bg && Number(bg.ID) === idGrupo)
-              : undefined;
-            const nomeGrupo = bitrixGroup?.NAME || '';
+            const nomeGrupo = groupNames[idGrupo];
             return (
               <tr key={idx} className="border-t hover:bg-gray-50 align-top">
                 <td className="px-4 py-3 text-sm">{row.codccusto_nome}</td>
-                <td className="px-4 py-3 text-sm">{nomeGrupo ? `${idGrupo} - ${nomeGrupo}` : `Grupo não encontrado (ID: ${idGrupo})`}</td>
+                <td className="px-4 py-3 text-sm">{nomeGrupo ? `${idGrupo} - ${nomeGrupo}` : `Buscando... (ID: ${idGrupo})`}</td>
                 {dynamicColumns.map((col) => {
                   const valor = row[col];
-                  const isPercent = typeof valor === 'number' && col.match(/^\d{4}-\d{2}$/);
+                  const isPercent = typeof valor === 'number' && col.match(/^[\d]{4}-[\d]{2}$/);
                   return (
                     <td
                       key={col}

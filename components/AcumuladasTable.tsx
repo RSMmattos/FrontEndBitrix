@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { fetchBitrixGroupNameById } from '../services/bitrixGroupNameService';
 import axios from 'axios';
 import { API_BASE_URL } from '../constants';
 import DetalhesAtividadesModal from './DetalhesAtividadesModal';
@@ -50,12 +51,30 @@ const AcumuladasTable: React.FC<AcumuladasTableProps> = ({ ano }) => {
     }
   }
 
+
+  // Novo estado para nomes dos grupos Bitrix (deve ser declarado antes de qualquer return)
+  const [groupNames, setGroupNames] = useState<{ [key: number]: string | null }>({});
+
   let registros: any[] = [];
   if (Array.isArray(data)) {
     registros = data;
   } else if (data && Array.isArray(data.registros)) {
     registros = data.registros;
   }
+
+  useEffect(() => {
+    const missingIds = registros
+      .map((row) => Number(row.idgrupobitrix))
+      .filter((id) => id && !(id in groupNames));
+    if (missingIds.length > 0) {
+      missingIds.forEach(async (id) => {
+        const nome = await fetchBitrixGroupNameById(id);
+        setGroupNames((prev) => ({ ...prev, [id]: nome }));
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [registros]);
+
   if (!registros || registros.length === 0) return <div className="p-8 text-center">Nenhum dado encontrado.</div>;
 
   const allKeys = Object.keys(registros[0] || {});
@@ -81,14 +100,11 @@ const AcumuladasTable: React.FC<AcumuladasTableProps> = ({ ano }) => {
           <tbody>
             {registros.map((row, idx) => {
               const idGrupo = Number(row.idgrupobitrix);
-              const bitrixGroup = Array.isArray(bitrixGroups)
-                ? bitrixGroups.find(bg => bg && Number(bg.ID) === idGrupo)
-                : undefined;
-              const nomeGrupo = bitrixGroup?.NAME || '';
+              const nomeGrupo = groupNames[idGrupo];
               return (
                 <tr key={idx} className="border-t hover:bg-gray-50 align-top">
                   <td className="px-4 py-3 text-sm">{row.codccusto_nome}</td>
-                  <td className="px-4 py-3 text-sm">{nomeGrupo ? `${idGrupo} - ${nomeGrupo}` : `Grupo não encontrado (ID: ${idGrupo})`}</td>
+                  <td className="px-4 py-3 text-sm">{nomeGrupo ? `${idGrupo} - ${nomeGrupo}` : `Buscando... (ID: ${idGrupo})`}</td>
                   <td className="px-4 py-3 text-sm text-center font-bold">
                     <button
                       className="text-emerald-700 underline hover:text-emerald-900"
