@@ -283,8 +283,8 @@ export const PrioritariasList: React.FC = () => {
                     ) : (
                       <button onClick={() => abrirModal(item)} className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl font-extrabold text-xs shadow transition-all uppercase tracking-widest">Concluir</button>
                     )}
-                    <button onClick={() => excluirAtividade(item.idtask)} className="bg-rose-600 hover:bg-rose-700 text-white px-2 py-2 rounded-xl" title="Excluir atividade">
-                      <Trash2 size={18} />
+                    <button onClick={() => excluirAtividade(item.idtask)} className="p-1 rounded-xl text-rose-600 hover:text-rose-800" title="Excluir atividade" style={{ background: 'none' }}>
+                      <Trash2 size={16} />
                     </button>
                   </td>
                 </tr>
