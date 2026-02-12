@@ -8,7 +8,7 @@ interface GroupLinkListProps {
 }
 
 export const GroupLinkList: React.FC<GroupLinkListProps> = ({ hideAddButton }) => {
-	const [groupLinks, setGroupLinks] = useState<{ codccusto: string; idgrupobitrix: number }[]>([]);
+	const [groupLinks, setGroupLinks] = useState<any[]>([]);
 	const [costCenters, setCostCenters] = useState<CostCenter[]>([]);
 	const [bitrixGroups, setBitrixGroups] = useState<BitrixGroup[]>([]);
 	const [loading, setLoading] = useState(true);
@@ -24,22 +24,11 @@ export const GroupLinkList: React.FC<GroupLinkListProps> = ({ hideAddButton }) =
 		setError(null);
 		try {
 			const [links, centers] = await Promise.all([
-				fetch(`${API_BASE_URL}/api/bgcatividade`).then(r => r.json()),
+				fetch('http://10.0.0.6:3001/api/vinculosgrupos').then(r => r.json()),
 				fetch(`${API_BASE_URL}/api/gccusto`).then(r => r.json())
 			]);
 			setGroupLinks(links);
 			setCostCenters(centers.filter((cc: CostCenter) => cc.ativo));
-			// Bitrix groups não bloqueia
-			fetch('https://agroserra.bitrix24.com.br/rest/187/wdalwcekbog0ke1r/sonet_group.get')
-				.then(r => r.json())
-				.then(data => {
-					if (data.result && Array.isArray(data.result)) {
-						setBitrixGroups(data.result.map((g: any) => ({ ...g, ID: g.ID?.toString?.() })));
-					} else {
-						setBitrixGroups([]);
-					}
-				})
-				.catch(() => setBitrixGroups([]));
 		} catch (err: any) {
 			setError('Erro ao carregar dados: ' + (err.message || err.toString()));
 		}
@@ -231,23 +220,18 @@ export const GroupLinkList: React.FC<GroupLinkListProps> = ({ hideAddButton }) =
 							</tr>
 						</thead>
 						<tbody>
-							{groupLinks.map(link => {
-								const costCenter = costCenters.find(cc => cc.codccusto === link.codccusto);
-								const idGrupoStr = link.idgrupobitrix !== undefined && link.idgrupobitrix !== null ? link.idgrupobitrix.toString() : '';
-								const bitrixGroup = Array.isArray(bitrixGroups) ? bitrixGroups.find(bg => bg && bg.ID?.toString() === idGrupoStr) : undefined;
-								return (
-									<tr key={link.codccusto} className="border-t hover:bg-gray-50">
-										<td className="px-6 py-4 text-sm">{link.codccusto}</td>
-										<td className="px-6 py-4 text-sm">{costCenter?.nome || 'N/A'}</td>
-										<td className="px-6 py-4 text-sm">{idGrupoStr} <span style={{color:'#aaa',fontSize:'10px'}}>({bitrixGroup?.ID || 'N/A'})</span></td>
-										<td className="px-6 py-4 text-sm">{bitrixGroup?.NAME || 'N/A'}</td>
-										<td className="px-6 py-4 text-sm text-right">
-											<button onClick={() => startEdit(link)} className="text-blue-600 hover:text-blue-800 mr-2"><Edit size={16} /></button>
-											<button onClick={() => handleDelete(link.codccusto)} className="text-red-600 hover:text-red-800"><Trash2 size={16} /></button>
-										</td>
-									</tr>
-								);
-							})}
+							{groupLinks.map(link => (
+								<tr key={link.codccusto} className="border-t hover:bg-gray-50">
+									<td className="px-6 py-4 text-sm">{link.codccusto}</td>
+									<td className="px-6 py-4 text-sm">{link.nome_centro_custo || 'N/A'}</td>
+									<td className="px-6 py-4 text-sm">{link.idgrupobitrix}</td>
+									<td className="px-6 py-4 text-sm">{link.nome_grupo_bitrix || 'N/A'}</td>
+									<td className="px-6 py-4 text-sm text-right">
+										<button onClick={() => startEdit(link)} className="text-blue-600 hover:text-blue-800 mr-2"><Edit size={16} /></button>
+										<button onClick={() => handleDelete(link.codccusto)} className="text-red-600 hover:text-red-800"><Trash2 size={16} /></button>
+									</td>
+								</tr>
+							))}
 							{groupLinks.length === 0 && (
 								<tr>
 									<td colSpan={5} className="px-6 py-12 text-center text-gray-500">Nenhum vínculo encontrado</td>
