@@ -152,6 +152,25 @@ const App: React.FC = () => {
   const saveAllChanges = async () => {
     const ids = Object.keys(pendingChanges);
     if (ids.length === 0) return;
+    // Validação: não permitir salvar se qualquer campo obrigatório estiver vazio
+    for (const id of ids) {
+      const changes = pendingChanges[id];
+      const taskObj = tasks.find(t => t.ID === id);
+      // Verifica campos obrigatórios
+      const prioritaria = changes.batividadeg_prioridade !== undefined ? changes.batividadeg_prioridade : taskObj?.batividadeg_prioridade;
+      const prazoPrioritaria = changes.batividadeg_dataprazofinal !== undefined ? changes.batividadeg_dataprazofinal : taskObj?.batividadeg_dataprazofinal;
+      const comentario = changes.batividadeg_comentario !== undefined ? changes.batividadeg_comentario : taskObj?.batividadeg_comentario;
+      // Prioritária precisa ser true ou false (não undefined/null)
+      const prioritariaValida = typeof prioritaria === 'boolean';
+      // Prazo precisa ser string não vazia
+      const prazoValido = typeof prazoPrioritaria === 'string' && prazoPrioritaria.trim() !== '';
+      // Comentário precisa ser string não vazia
+      const comentarioValido = typeof comentario === 'string' && comentario.trim() !== '';
+      if (!prioritariaValida || !prazoValido || !comentarioValido) {
+        setError('Preencha todos os campos obrigatórios: Prioritária, Prazo Prioritária e Comentário para todas as atividades antes de salvar.');
+        return;
+      }
+    }
     setIsSavingBatch(true);
     try {
       for (const id of ids) {
@@ -186,11 +205,13 @@ const App: React.FC = () => {
           }
         }
         // Garante que idgrupobitrix será sempre enviado (mesmo se não houver alteração)
-        if (taskObj && typeof taskObj.idgrupobitrix !== 'undefined') {
-          batividadegFields.idgrupobitrix = taskObj.idgrupobitrix;
-        } else if (changes.idgrupobitrix !== undefined) {
-          batividadegFields.idgrupobitrix = changes.idgrupobitrix;
+        let idGrupo = 0;
+        if (taskObj && typeof taskObj.idgrupobitrix !== 'undefined' && taskObj.idgrupobitrix !== null) {
+          idGrupo = taskObj.idgrupobitrix;
+        } else if (changes.idgrupobitrix !== undefined && changes.idgrupobitrix !== null) {
+          idGrupo = changes.idgrupobitrix;
         }
+        batividadegFields.idgrupobitrix = (idGrupo === null || idGrupo === undefined) ? 0 : idGrupo;
         if (Object.keys(batividadegFields).length > 0) {
           try {
             await updateBAtividadeG(Number(id), batividadegFields);
