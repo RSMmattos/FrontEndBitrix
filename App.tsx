@@ -244,7 +244,7 @@ const App: React.FC = () => {
     let result = tasks;
     const hasSearch = !!searchTerm.trim();
     // Cria um mapa de tarefas salvas para garantir merge correto
-    const savedTasksMap = new Map(tasks.map(t => [t.ID, t]));
+    const savedTasksMap = new Map<string, BitrixTask>(tasks.map(t => [t.ID, t]));
     if (hasSearch) {
       if (allTasks) {
         const low = searchTerm.toLowerCase();
@@ -254,7 +254,7 @@ const App: React.FC = () => {
           (t.RESPONSIBLE_NAME && t.RESPONSIBLE_NAME.toLowerCase().includes(low))
         ).map(t => {
           // Merge com dados salvos da batividadeg
-          const saved = savedTasksMap.get(t.ID);
+          const saved = savedTasksMap.get(t.ID) as BitrixTask | undefined;
           return {
             ...t,
             batividadeg_prioridade: saved?.batividadeg_prioridade ?? t.batividadeg_prioridade,

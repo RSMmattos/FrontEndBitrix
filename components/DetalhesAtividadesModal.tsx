@@ -22,14 +22,13 @@ const DetalhesAtividadesModal: React.FC<DetalhesAtividadesModalProps> = ({ open,
     if (!open || !idgrupobitrix) return;
     setLoading(true);
     setError(null);
-    // Busca atividades do grupo
+    // Busca atividades do grupo (apenas API interna)
     const url = apiModal ? (apiModal.includes('://') ? apiModal : `${API_BASE_URL}${apiModal}`) : `${API_BASE_URL}/api/batividadeg/grupo/${idgrupobitrix}`;
     fetch(url)
       .then(res => res.json())
-      .then(async json => {
+      .then(json => {
         let regs = json.registros || json.atividades || [];
         if (mes && contexto === 'programadas') {
-          // Mostrar apenas atividades programadas para o mês selecionado
           regs = regs.filter((r: any) => {
             if (!r.dataprazofinal) return false;
             const dataPrazo = new Date(r.dataprazofinal);
@@ -37,7 +36,6 @@ const DetalhesAtividadesModal: React.FC<DetalhesAtividadesModalProps> = ({ open,
             return mesAnoPrazo === mes;
           });
         } else if (mes && contexto === 'saldo') {
-          // Saldo acumulado: atividades programadas até o mês selecionado e não concluídas até esse mês
           regs = regs.filter((r: any) => {
             if (!r.dataprazofinal) return false;
             const dataPrazo = new Date(r.dataprazofinal);
@@ -49,7 +47,6 @@ const DetalhesAtividadesModal: React.FC<DetalhesAtividadesModalProps> = ({ open,
             return mesAnoConclusao > mes;
           });
         } else if (mes && contexto === 'executadas') {
-          // Executadas: mostrar apenas atividades concluídas no mês selecionado
           regs = regs.filter((r: any) => {
             if (!r.dataconclusao) return false;
             const dataConclusao = new Date(r.dataconclusao);
@@ -58,45 +55,7 @@ const DetalhesAtividadesModal: React.FC<DetalhesAtividadesModalProps> = ({ open,
           });
         }
         setRegistros(regs);
-        // Busca detalhes das tarefas no Bitrix24
-        if (regs.length > 0) {
-          try {
-            // Busca até 1000 tarefas (paginando)
-            let allTasks: any[] = [];
-            let start = 0;
-            let hasMore = true;
-            while (hasMore && start < 1000) {
-              const resTasks = await fetch(`https://agroserra.bitrix24.com.br/rest/187/wdalwcekbog0ke1r/tasks.task.list?start=${start}`);
-              const jsonTasks = await resTasks.json();
-              const tasks = jsonTasks.result?.tasks || [];
-              allTasks = allTasks.concat(tasks);
-              if (jsonTasks.result?.next) {
-                start = jsonTasks.result.next;
-              } else {
-                hasMore = false;
-              }
-            }
-            const map: Record<string, any> = {};
-            allTasks.forEach((t: any) => {
-              map[String(t.id)] = t;
-            });
-            // Para ids não encontrados, buscar individualmente
-            const missing = regs.filter((r: any) => !map[String(r.idtask)]).map((r: any) => r.idtask);
-            for (const id of missing) {
-              try {
-                const resTask = await fetch(`https://agroserra.bitrix24.com.br/rest/187/wdalwcekbog0ke1r/tasks.task.get?taskId=${id}`);
-                const jsonTask = await resTask.json();
-                const t = jsonTask.result?.task;
-                if (t) map[String(t.id)] = t;
-              } catch {}
-            }
-            setTasksMap(map);
-          } catch (e) {
-            setTasksMap({});
-          }
-        } else {
-          setTasksMap({});
-        }
+        setTasksMap({}); // Não usa mais Bitrix
       })
       .catch(err => setError(err.message || 'Erro ao buscar detalhes.'))
       .finally(() => setLoading(false));
@@ -132,25 +91,22 @@ const DetalhesAtividadesModal: React.FC<DetalhesAtividadesModalProps> = ({ open,
               </thead>
               <tbody>
                 {(() => { console.log('DEBUG tasksMap', tasksMap, 'registros', registros); return null; })()}
-                {registros.map((r, idx) => {
-                  const task = tasksMap[r.idtask];
-                  return (
-                    <tr key={idx} className="border-t">
-                      <td className="px-3 py-2 text-sm">{r.idtask}</td>
-                      <td className="px-3 py-2 text-sm">{task?.title || r.titulo || r.titulo_task || <span className="text-slate-400">-</span>}</td>
-                      <td className="px-3 py-2 text-sm">
-                        <span className="flex items-center gap-2">
-                          <span className="w-6 h-6 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-700 shrink-0">
-                            <UserIcon size={14} />
-                          </span>
-                          <span>{task?.responsible?.name || r.responsavel || r.responsavel_nome || <span className="text-slate-400">-</span>}</span>
+                {registros.map((r, idx) => (
+                  <tr key={idx} className="border-t">
+                    <td className="px-3 py-2 text-sm">{r.idtask}</td>
+                    <td className="px-3 py-2 text-sm">{r.titulo_task || r.titulo || <span className="text-slate-400">-</span>}</td>
+                    <td className="px-3 py-2 text-sm">
+                      <span className="flex items-center gap-2">
+                        <span className="w-6 h-6 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-700 shrink-0">
+                          <UserIcon size={14} />
                         </span>
-                      </td>
-                      <td className="px-3 py-2 text-sm">{r.dataprazofinal ? new Date(r.dataprazofinal).toLocaleDateString() : '-'}</td>
-                      <td className="px-3 py-2 text-sm">{r.dataconclusao ? new Date(r.dataconclusao).toLocaleDateString() : '-'}</td>
-                    </tr>
-                  );
-                })}
+                        <span>{r.responsavel_nome || r.responsavel || <span className="text-slate-400">-</span>}</span>
+                      </span>
+                    </td>
+                    <td className="px-3 py-2 text-sm">{r.dataprazofinal ? new Date(r.dataprazofinal).toLocaleDateString() : '-'}</td>
+                    <td className="px-3 py-2 text-sm">{r.dataconclusao ? new Date(r.dataconclusao).toLocaleDateString() : '-'}</td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
