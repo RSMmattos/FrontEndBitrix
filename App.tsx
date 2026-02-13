@@ -273,7 +273,16 @@ const App: React.FC = () => {
       } else if (statusFilter === 'not-completed') {
         result = result.filter(t => t.STATUS !== '5');
       }
-      return result.map(t => ({
+
+      // Sempre incluir as prioritárias, mesmo fora do filtro de data
+      const prioritarias = tasks.filter(t => t.batividadeg_prioridade);
+      const prioritariasIds = new Set(prioritarias.map(t => t.ID));
+      // Junta as tarefas filtradas com as prioritárias (sem duplicar)
+      const merged = [
+        ...result,
+        ...prioritarias.filter(t => !result.some(r => r.ID === t.ID))
+      ];
+      return merged.map(t => ({
         ...t,
         batividadeg_prioridade: t.batividadeg_prioridade,
         batividadeg_dataprazofinal: t.batividadeg_dataprazofinal,
