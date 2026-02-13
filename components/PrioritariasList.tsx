@@ -16,24 +16,37 @@ function formatarDataLocal(dataStr: string) {
 }
 // Modal lateral customizada (sem react-modal)
 import { Search, Filter, User as UserIcon, Trash2 } from 'lucide-react';
-  // Função para excluir atividade
-  const excluirAtividade = async (idtask: string | number) => {
-    if (!window.confirm('Deseja realmente excluir esta atividade?')) return;
+import ConfirmDeleteModal from './ConfirmDeleteModal';
+
+export const PrioritariasList: React.FC = () => {
+  // Modal de confirmação de exclusão (deve estar dentro do componente)
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | number | null>(null);
+
+  const pedirConfirmacaoExclusao = (idtask: string | number) => {
+    setDeleteId(idtask);
+    setDeleteModalOpen(true);
+  };
+
+  const excluirAtividade = async () => {
+    if (!deleteId) return;
+    setDeleteLoading(true);
     try {
-      const response = await fetch(`http://10.0.0.6:3001/api/batividadeg/${idtask}`, { method: 'DELETE' });
+      const response = await fetch(`http://10.0.0.6:3001/api/batividadeg/${deleteId}`, { method: 'DELETE' });
       const result = await response.json();
       if (!response.ok) {
         alert(result.message || 'Erro ao excluir');
       } else {
-        alert(result.message || 'Excluído com sucesso');
         await atualizarDados();
       }
     } catch (e) {
       alert('Erro ao excluir: ' + e.message);
     }
+    setDeleteLoading(false);
+    setDeleteModalOpen(false);
+    setDeleteId(null);
   };
-
-export const PrioritariasList: React.FC = () => {
   const [dados, setDados] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedGroup, setSelectedGroup] = useState('');
@@ -283,7 +296,7 @@ export const PrioritariasList: React.FC = () => {
                     ) : (
                       <button onClick={() => abrirModal(item)} className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl font-extrabold text-xs shadow transition-all uppercase tracking-widest">Concluir</button>
                     )}
-                    <button onClick={() => excluirAtividade(item.idtask)} className="p-1 rounded-xl text-rose-600 hover:text-rose-800" title="Excluir atividade" style={{ background: 'none' }}>
+                    <button onClick={() => pedirConfirmacaoExclusao(item.idtask)} className="p-1 rounded-xl text-rose-600 hover:text-rose-800" title="Excluir atividade" style={{ background: 'none' }}>
                       <Trash2 size={16} />
                     </button>
                   </td>
@@ -294,6 +307,14 @@ export const PrioritariasList: React.FC = () => {
         )}
       </div>
       {/* Modal lateral customizada */}
+      <ConfirmDeleteModal
+        open={deleteModalOpen}
+        onClose={() => { setDeleteModalOpen(false); setDeleteId(null); }}
+        onConfirm={excluirAtividade}
+        loading={deleteLoading}
+        title="Confirmar Exclusão"
+        message="Deseja realmente excluir esta atividade?"
+      />
       {modalAberto && atividadeSelecionada && (
         <div className="fixed inset-0 z-50 flex justify-end">
           <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onClick={fecharModal} />
