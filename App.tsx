@@ -266,18 +266,29 @@ const App: React.FC = () => {
       return [];
     } else {
       if (selectedGroup) {
+        // Filtra apenas tarefas do grupo selecionado
         result = result.filter(t => t.GROUP_NAME === selectedGroup);
+        // Sempre incluir prioritárias, mas só do grupo selecionado
+        const prioritarias = tasks.filter(t => t.batividadeg_prioridade && t.GROUP_NAME === selectedGroup);
+        // Junta as tarefas filtradas com as prioritárias do grupo (sem duplicar)
+        const merged = [
+          ...result,
+          ...prioritarias.filter(t => !result.some(r => r.ID === t.ID))
+        ];
+        return merged.map(t => ({
+          ...t,
+          batividadeg_prioridade: t.batividadeg_prioridade,
+          batividadeg_dataprazofinal: t.batividadeg_dataprazofinal,
+          batividadeg_comentario: t.batividadeg_comentario
+        }));
       }
       if (statusFilter === 'completed') {
         result = result.filter(t => t.STATUS === '5');
       } else if (statusFilter === 'not-completed') {
         result = result.filter(t => t.STATUS !== '5');
       }
-
       // Sempre incluir as prioritárias, mesmo fora do filtro de data
       const prioritarias = tasks.filter(t => t.batividadeg_prioridade);
-      const prioritariasIds = new Set(prioritarias.map(t => t.ID));
-      // Junta as tarefas filtradas com as prioritárias (sem duplicar)
       const merged = [
         ...result,
         ...prioritarias.filter(t => !result.some(r => r.ID === t.ID))
