@@ -3,6 +3,7 @@ import { fetchBitrixGroupNameById } from '../services/bitrixGroupNameService';
 import axios from 'axios';
 import { API_BASE_URL } from '../constants';
 import DetalhesAtividadesModal from './DetalhesAtividadesModal';
+import * as XLSX from 'xlsx';
 
 interface VariavelRegistro {
   [key: string]: string | number | null;
@@ -17,6 +18,29 @@ interface AcumuladasTableProps {
 }
 
 const AcumuladasTable: React.FC<AcumuladasTableProps> = ({ ano }) => {
+    const [exporting, setExporting] = useState(false);
+    // Função para exportar para Excel
+    const handleExportExcel = () => {
+      setExporting(true);
+      const exportData = registros.map(row => {
+        const idGrupo = Number(row.idgrupobitrix);
+        const nomeGrupo = groupNames[idGrupo] || '';
+        return {
+          'Centro de Custo': row.codccusto_nome,
+          'Grupo Bitrix': nomeGrupo ? `${idGrupo} - ${nomeGrupo}` : `ID: ${idGrupo}`,
+          'Total': row.total_registros,
+          ...dynamicColumns.reduce((acc, col) => {
+            acc[col] = row[col];
+            return acc;
+          }, {})
+        };
+      });
+      const ws = XLSX.utils.json_to_sheet(exportData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Acumuladas');
+      XLSX.writeFile(wb, `acumuladas_${ano}.xlsx`);
+      setExporting(false);
+    };
   const [data, setData] = useState<VariaveisResponse | null | any[]>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -85,6 +109,15 @@ const AcumuladasTable: React.FC<AcumuladasTableProps> = ({ ano }) => {
 
   return (
     <>
+      <div className="flex justify-end mb-2">
+        <button
+          className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded shadow disabled:opacity-50"
+          onClick={handleExportExcel}
+          disabled={exporting || !registros.length}
+        >
+          {exporting ? 'Exportando...' : 'Exportar para Excel'}
+        </button>
+      </div>
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-x-auto">
         <table className="w-full text-left">
           <thead className="bg-gray-50">

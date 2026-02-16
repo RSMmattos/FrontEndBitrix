@@ -6,13 +6,10 @@ function formatarDataLocal(dataStr: string) {
   const match = dataStr.match(/^(\d{4})-(\d{2})-(\d{2})/);
   if (match) {
     const [_, ano, mes, dia] = match;
-    const dt = new Date(Number(ano), Number(mes) - 1, Number(dia));
-    return dt.toLocaleDateString('pt-BR');
+    return `${dia}/${mes}/${ano}`;
   }
   // fallback para outros formatos
-  const dt = new Date(dataStr);
-  if (isNaN(dt.getTime())) return '--';
-  return dt.toLocaleDateString('pt-BR');
+  return dataStr;
 }
 // Modal lateral customizada (sem react-modal)
 import { Search, Filter, User as UserIcon, Trash2 } from 'lucide-react';
@@ -363,7 +360,7 @@ export const PrioritariasList: React.FC = () => {
               </div>
               <div className="mb-2 flex gap-2 items-center">
                 <span className="text-xs font-bold text-slate-500 uppercase">Prazo Prioritária:</span>
-                <span className="text-sm font-bold text-slate-700">{atividadeSelecionada.dataprazofinal ? new Date(atividadeSelecionada.dataprazofinal).toLocaleDateString('pt-BR') : '--'}</span>
+                <span className="text-sm font-bold text-slate-700">{atividadeSelecionada.dataprazofinal ? formatarDataLocal(atividadeSelecionada.dataprazofinal) : '--'}</span>
               </div>
               <div className="mb-2 flex gap-2 items-center">
                 <span className="text-xs font-bold text-slate-500 uppercase">Concluída Bitrix:</span>
