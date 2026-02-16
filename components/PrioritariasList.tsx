@@ -14,8 +14,29 @@ function formatarDataLocal(dataStr: string) {
 // Modal lateral customizada (sem react-modal)
 import { Search, Filter, User as UserIcon, Trash2 } from 'lucide-react';
 import ConfirmDeleteModal from './ConfirmDeleteModal';
+import * as XLSX from 'xlsx';
 
 export const PrioritariasList: React.FC = () => {
+    const [exporting, setExporting] = useState(false);
+    // Função para exportar para Excel
+    const handleExportExcel = () => {
+      setExporting(true);
+      const exportData = dadosFiltrados.map(item => ({
+        'ID Task': item.idtask,
+        'Nome': item.title,
+        'Grupo': item.nomeGrupo,
+        'Responsável': item.nomeResponsavel,
+        'Prazo Prioritária': item.dataprazofinal ? formatarDataLocal(item.dataprazofinal) : '--',
+        'Concluída Bitrix': item.concluidaBitrix,
+        'Conclusão Diretor': item.statusDiretor,
+        'Data Conclusão Diretor': item.dataConclusaoDiretor ? formatarDataLocal(item.dataConclusaoDiretor) : '--',
+      }));
+      const ws = XLSX.utils.json_to_sheet(exportData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Prioritarias');
+      XLSX.writeFile(wb, `prioritarias.xlsx`);
+      setExporting(false);
+    };
   // Modal de confirmação de exclusão (deve estar dentro do componente)
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
@@ -145,6 +166,15 @@ export const PrioritariasList: React.FC = () => {
 
   return (
     <>
+      <div className="flex justify-end mb-2">
+        <button
+          className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded shadow disabled:opacity-50"
+          onClick={handleExportExcel}
+          disabled={exporting || !dadosFiltrados.length}
+        >
+          {exporting ? 'Exportando...' : 'Exportar para Excel'}
+        </button>
+      </div>
       <div className="mb-6">
         <h2 className="text-2xl font-black text-emerald-700">Tarefas Prioritárias</h2>
       </div>
