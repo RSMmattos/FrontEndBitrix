@@ -166,15 +166,6 @@ export const PrioritariasList: React.FC = () => {
 
   return (
     <>
-      <div className="flex justify-end mb-2">
-        <button
-          className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded shadow disabled:opacity-50"
-          onClick={handleExportExcel}
-          disabled={exporting || !dadosFiltrados.length}
-        >
-          {exporting ? 'Exportando...' : 'Exportar para Excel'}
-        </button>
-      </div>
       <div className="mb-6">
         <h2 className="text-2xl font-black text-emerald-700">Tarefas Prioritárias</h2>
       </div>
@@ -236,6 +227,15 @@ export const PrioritariasList: React.FC = () => {
             onChange={e => setConsulta(e.target.value)}
           />
         </div>
+      </div>
+      <div className="flex justify-end mb-2">
+        <button
+          className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded shadow disabled:opacity-50"
+          onClick={handleExportExcel}
+          disabled={exporting || !dadosFiltrados.length}
+        >
+          {exporting ? 'Exportando...' : 'Exportar para Excel'}
+        </button>
       </div>
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-x-auto">
         {loading ? (

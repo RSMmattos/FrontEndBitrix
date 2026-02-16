@@ -8,6 +8,7 @@ import { API_BASE_URL } from '../constants';
 import { fetchBAtividadeG } from '../services/batividadegService';
 import { fetchTasks } from '../services/bitrixService';
 import { CostCenter, BitrixGroup, BitrixTask } from '../types';
+import * as XLSX from 'xlsx';
 
 
 interface AnaliseRow {
@@ -58,9 +59,36 @@ export const AnaliseList: React.FC = () => {
         // Extrai os meses dinamicamente
         const meses = Object.keys(data.registros[0] || {}).filter(k => /^\d{4}-\d{2}$/.test(k));
 
+        // Função para exportar para Excel
+        const handleExportExcel = () => {
+          const exportData = data.registros.map((row: any) => {
+            return {
+              'Centro de Custo': row.codccusto_nome,
+              'Grupo Bitrix': row.idgrupobitrix,
+              'Total': row.total_registros,
+              ...meses.reduce((acc, mes) => {
+                acc[mes] = row[mes];
+                return acc;
+              }, {})
+            };
+          });
+          const ws = XLSX.utils.json_to_sheet(exportData);
+          const wb = XLSX.utils.book_new();
+          XLSX.utils.book_append_sheet(wb, ws, 'Atividades');
+          XLSX.writeFile(wb, `atividades_resumo.xlsx`);
+        };
         return (
           <div className="space-y-4">
             <h2 className="text-2xl font-black text-slate-900 mb-2">Resumo de Atividades por Grupo</h2>
+            <div className="flex justify-end mb-2">
+              <button
+                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded shadow disabled:opacity-50"
+                onClick={handleExportExcel}
+                disabled={!data.registros.length}
+              >
+                Exportar para Excel
+              </button>
+            </div>
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-x-auto">
               <table className="w-full text-left">
                 <thead className="bg-gray-50">

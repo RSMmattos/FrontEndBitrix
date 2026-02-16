@@ -17,6 +17,7 @@ import { CostCenterList } from './components/CostCenterList';
 import { GroupLinkList } from './components/GroupLinkList';
 import { UsuariosOnline } from './components/UsuariosOnline';
 import { PerfilUsuario } from './components/PerfilUsuario';
+import * as XLSX from 'xlsx';
 // import { VisaoGroupLinkList } from './components/VisaoGroupLinkList';
 // import { VisaoMatriz } from './components/VisaoMatriz';
 import { fetchTasks } from './services/bitrixService';
@@ -530,6 +531,31 @@ const App: React.FC = () => {
                 </div>
               </div>
 
+              <div className="flex justify-end mb-4">
+                <button
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded shadow disabled:opacity-50"
+                  onClick={() => {
+                    const exportData = filteredTasks.map(t => ({
+                      'ID': t.ID,
+                      'Nome': t.TITLE,
+                      'Responsável': t.RESPONSIBLE_NAME,
+                      'Prazo Prioritária': t.batividadeg_dataprazofinal || '',
+                      'Prioritária': t.batividadeg_prioridade ? 'Sim' : 'Não',
+                      'Forma de Entrega': t.FORMA_ENTREGA || '',
+                      'Comentário': t.batividadeg_comentario || '',
+                      'Grupo': t.GROUP_NAME || '',
+                      'Status': t.STATUS || '',
+                    }));
+                    const ws = XLSX.utils.json_to_sheet(exportData);
+                    const wb = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(wb, ws, 'Atividades');
+                    XLSX.writeFile(wb, `atividades.xlsx`);
+                  }}
+                  disabled={filteredTasks.length === 0}
+                >
+                  Exportar para Excel
+                </button>
+              </div>
               <div className="bg-white rounded-2xl border border-slate-200 shadow-sm">
                 <div className="overflow-x-auto">
                   {loading ? <TableSkeleton /> : (
