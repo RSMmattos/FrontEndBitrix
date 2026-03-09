@@ -134,6 +134,9 @@ export const PrioritariasList: React.FC = () => {
         }
       );
       if (resp.ok) {
+        // Envia comentário para o Bitrix
+        const mensagem = 'Esta atividade foi considerada como concluída pela Diretoria.';
+        await addTaskComment(String(atividadeSelecionada.idtask), mensagem);
         await atualizarDados();
         fecharModal();
       } else {
@@ -258,7 +261,7 @@ export const PrioritariasList: React.FC = () => {
               Todos
             </button>
             {gruposUnicos
-              .filter(group => group.toLowerCase().includes(grupoFiltroTexto.toLowerCase()))
+              .filter(group => typeof group === 'string' && group.toLowerCase().includes(grupoFiltroTexto.toLowerCase()))
               .map(group => (
                 <button
                   key={group}
