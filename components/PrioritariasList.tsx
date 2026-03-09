@@ -351,7 +351,17 @@ export const PrioritariasList: React.FC = () => {
             <tbody>
               {dadosFiltrados.map((item) => (
                 <tr key={item.idtask} className="border-t hover:bg-gray-50 align-top transition-colors">
-                  <td className="px-8 py-4 text-sm font-black text-slate-500 break-words max-w-[80px]">#{item.idtask}</td>
+                  <td className="px-8 py-4 text-sm font-black text-slate-500 break-words max-w-[80px]">
+                    <a
+                      href={`https://agroserra.bitrix24.com.br/company/personal/user/77/tasks/task/view/${item.idtask}/`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-emerald-700 underline hover:text-emerald-900 transition-all"
+                      title="Abrir tarefa no Bitrix"
+                    >
+                      #{item.idtask}
+                    </a>
+                  </td>
                   <td className="px-8 py-4 text-sm text-slate-800 font-bold break-words max-w-[220px]">{item.title}</td>
                   <td className="px-8 py-4 text-sm text-slate-700 font-bold break-words max-w-[180px]">{item.nomeGrupo}</td>
                   <td className="px-8 py-4 text-sm text-slate-600">
@@ -422,7 +432,15 @@ export const PrioritariasList: React.FC = () => {
               </div>
               <div className="mb-2 flex gap-2 items-center">
                 <span className="text-xs font-bold text-slate-500 uppercase">ID Task:</span>
-                <span className="text-sm font-bold text-slate-700">{atividadeSelecionada.idtask}</span>
+                <a
+                  href={`https://agroserra.bitrix24.com.br/company/personal/user/77/tasks/task/view/${atividadeSelecionada.idtask}/`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm font-bold text-emerald-700 underline hover:text-emerald-900 transition-all"
+                  title="Abrir tarefa no Bitrix"
+                >
+                  {atividadeSelecionada.idtask}
+                </a>
               </div>
               <div className="mb-2 flex gap-2 items-center">
                 <span className="text-xs font-bold text-slate-500 uppercase">Título:</span>
