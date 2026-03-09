@@ -54,7 +54,17 @@ export const EditableTaskRow: React.FC<EditableTaskRowProps> = ({
   return (
     <tr className="hover:bg-slate-50/80 transition-colors border-b border-slate-100">
       {/* ID */}
-      <td className="px-6 py-5 align-top font-black text-[10px] text-slate-400">#{task.ID}</td>
+      <td className="px-6 py-5 align-top font-black text-[10px] text-slate-400">
+        <a
+          href={`https://agroserra.bitrix24.com.br/company/personal/user/77/tasks/task/view/${task.ID}/`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-emerald-700 underline hover:text-emerald-900 transition-all"
+          title="Abrir tarefa no Bitrix"
+        >
+          #{task.ID}
+        </a>
+      </td>
       
       {/* NOME */}
       <td className="px-6 py-5 align-top">
