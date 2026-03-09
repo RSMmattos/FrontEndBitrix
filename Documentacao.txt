@@ -37,3 +37,5 @@ docker run -d -p 4001:80 --name frontendbitrix frontendbitrix:latest
 ```
 docker ps
 ```
+Startar o conteiner
+docker start frontendbitrix

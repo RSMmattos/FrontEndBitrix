@@ -15,6 +15,7 @@ function formatarDataLocal(dataStr: string) {
 import { Search, Filter, User as UserIcon, Trash2 } from 'lucide-react';
 import ConfirmDeleteModal from './ConfirmDeleteModal';
 import * as XLSX from 'xlsx';
+import { addTaskComment } from '../services/bitrixService';
 
 export const PrioritariasList: React.FC = () => {
     const [exporting, setExporting] = useState(false);
@@ -68,6 +69,7 @@ export const PrioritariasList: React.FC = () => {
   const [dados, setDados] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedGroup, setSelectedGroup] = useState('');
+  const [grupoFiltroTexto, setGrupoFiltroTexto] = useState('');
   const [consulta, setConsulta] = useState('');
   const [filtroStatusDiretor, setFiltroStatusDiretor] = useState<string>('Não');
   const [filtroAno, setFiltroAno] = useState<string>('');
@@ -75,16 +77,23 @@ export const PrioritariasList: React.FC = () => {
   const [modalAberto, setModalAberto] = useState(false);
   const [atividadeSelecionada, setAtividadeSelecionada] = useState<any>(null);
   const [dataConclusao, setDataConclusao] = useState<string>('');
+  const [prazoPrioritaria, setPrazoPrioritaria] = useState<string>('');
   const [salvando, setSalvando] = useState(false);
   // Função para abrir o modal e setar a atividade selecionada
   const abrirModal = (atividade: any) => {
     setAtividadeSelecionada(atividade);
-    // Preenche o campo com a data de hoje no formato yyyy-MM-dd
+    // Preenche o campo de conclusão com a data de hoje
     const hoje = new Date();
     const yyyy = hoje.getFullYear();
     const mm = String(hoje.getMonth() + 1).padStart(2, '0');
     const dd = String(hoje.getDate()).padStart(2, '0');
     setDataConclusao(`${yyyy}-${mm}-${dd}`);
+    // Preenche o campo de prazo prioritária com o valor atual da atividade (ou hoje se não houver)
+    if (atividade.dataprazofinal) {
+      setPrazoPrioritaria(atividade.dataprazofinal.slice(0, 10));
+    } else {
+      setPrazoPrioritaria(`${yyyy}-${mm}-${dd}`);
+    }
     setModalAberto(true);
   };
 
@@ -93,6 +102,7 @@ export const PrioritariasList: React.FC = () => {
     setModalAberto(false);
     setAtividadeSelecionada(null);
     setDataConclusao('');
+    setPrazoPrioritaria('');
   };
 
   // Função para salvar a data de conclusão
@@ -117,17 +127,50 @@ export const PrioritariasList: React.FC = () => {
         {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ dataconclusao: dataConclusao })
+          body: JSON.stringify({
+            dataconclusao: dataConclusao,
+            dataprazofinal: prazoPrioritaria
+          })
         }
       );
       if (resp.ok) {
         await atualizarDados();
         fecharModal();
       } else {
-        alert('Erro ao atualizar data.');
+        alert('Erro ao atualizar dados.');
       }
     } catch (e) {
-      alert('Erro ao atualizar data.');
+      alert('Erro ao atualizar dados.');
+    }
+    setSalvando(false);
+  };
+
+  // Função para salvar apenas o prazo prioritária
+  const salvarPrazoPrioritaria = async () => {
+    if (!atividadeSelecionada) return;
+    setSalvando(true);
+    try {
+      const resp = await fetch(`http://10.0.0.6:3001/api/batividadeg/edit-by-idtask/${atividadeSelecionada.idtask}`,
+        {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            dataprazofinal: prazoPrioritaria
+          })
+        }
+      );
+      if (resp.ok) {
+        // Envia comentário para o Bitrix
+        const dataFormatada = formatarDataLocal(prazoPrioritaria);
+        const mensagem = `Essa atividade teve o prazo prioritária alterado para ${dataFormatada}.`;
+        await addTaskComment(String(atividadeSelecionada.idtask), mensagem);
+        await atualizarDados();
+        fecharModal();
+      } else {
+        alert('Erro ao atualizar prazo.');
+      }
+    } catch (e) {
+      alert('Erro ao atualizar prazo.');
     }
     setSalvando(false);
   };
@@ -199,6 +242,14 @@ export const PrioritariasList: React.FC = () => {
         <div className="flex items-center gap-2 bg-white border border-slate-200 p-2 rounded-2xl shadow-sm overflow-x-auto max-w-full scrollbar-thin scrollbar-thumb-slate-200" style={{ WebkitOverflowScrolling: 'touch' }}>
           <Filter size={16} />
           <span className="text-[10px] font-black uppercase tracking-widest">Grupo:</span>
+          <input
+            type="text"
+            placeholder="Pesquisar grupo..."
+            className="w-full mb-2 mt-1 px-4 py-2 rounded border border-slate-200 text-sm"
+            value={grupoFiltroTexto}
+            onChange={e => setGrupoFiltroTexto(e.target.value)}
+            style={{ minWidth: 220, maxWidth: 400 }}
+          />
           <div className="flex flex-row gap-2 min-w-fit">
             <button
               onClick={() => setSelectedGroup('')}
@@ -206,15 +257,17 @@ export const PrioritariasList: React.FC = () => {
             >
               Todos
             </button>
-            {gruposUnicos.map(group => (
-              <button
-                key={group}
-                onClick={() => setSelectedGroup(group || '')}
-                className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all whitespace-nowrap ${selectedGroup === group ? 'bg-emerald-600 text-white shadow-md' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'}`}
-              >
-                {group}
-              </button>
-            ))}
+            {gruposUnicos
+              .filter(group => group.toLowerCase().includes(grupoFiltroTexto.toLowerCase()))
+              .map(group => (
+                <button
+                  key={group}
+                  onClick={() => setSelectedGroup(group || '')}
+                  className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase transition-all whitespace-nowrap ${selectedGroup === group ? 'bg-emerald-600 text-white shadow-md' : 'bg-slate-50 text-slate-500 hover:bg-slate-100'}`}
+                >
+                  {group}
+                </button>
+              ))}
           </div>
         </div>
         <div className="relative w-full sm:w-1/2">
@@ -390,7 +443,20 @@ export const PrioritariasList: React.FC = () => {
               </div>
               <div className="mb-2 flex gap-2 items-center">
                 <span className="text-xs font-bold text-slate-500 uppercase">Prazo Prioritária:</span>
-                <span className="text-sm font-bold text-slate-700">{atividadeSelecionada.dataprazofinal ? formatarDataLocal(atividadeSelecionada.dataprazofinal) : '--'}</span>
+                <input
+                  type="date"
+                  className="border border-emerald-200 rounded-xl px-2 py-1 text-sm font-bold focus:ring-2 focus:ring-emerald-500 outline-none transition-all shadow-sm"
+                  value={prazoPrioritaria}
+                  onChange={e => setPrazoPrioritaria(e.target.value)}
+                  disabled={salvando}
+                  style={{ width: 140 }}
+                />
+                <button
+                  onClick={salvarPrazoPrioritaria}
+                  disabled={salvando}
+                  className="ml-2 bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1 rounded font-bold text-xs transition-all disabled:opacity-50"
+                  title="Enviar Prazo Prioritária"
+                >Enviar</button>
               </div>
               <div className="mb-2 flex gap-2 items-center">
                 <span className="text-xs font-bold text-slate-500 uppercase">Concluída Bitrix:</span>
