@@ -86,6 +86,7 @@ const KPIPage: React.FC = () => {
           <table className="min-w-full mb-6 border">
             <thead>
               <tr>
+                <th className="border px-2 py-1">idtask</th>
                 <th className="border px-2 py-1">Título</th>
                 <th className="border px-2 py-1">Responsável</th>
                 <th className="border px-2 py-1">Comentário</th>
@@ -96,6 +97,7 @@ const KPIPage: React.FC = () => {
             <tbody>
               {data.concluidas.map((t, i) => (
                 <tr key={i}>
+                  <td className="border px-2 py-1">{t.idtask}</td>
                   <td className="border px-2 py-1">{t.title}</td>
                   <td className="border px-2 py-1">{t.responsavel}</td>
                   <td className="border px-2 py-1">{t.comentario}</td>
@@ -109,6 +111,7 @@ const KPIPage: React.FC = () => {
           <table className="min-w-full border">
             <thead>
               <tr>
+                <th className="border px-2 py-1">idtask</th>
                 <th className="border px-2 py-1">Título</th>
                 <th className="border px-2 py-1">Responsável</th>
                 <th className="border px-2 py-1">Comentário</th>
@@ -119,6 +122,7 @@ const KPIPage: React.FC = () => {
             <tbody>
               {data.pendentes.map((t, i) => (
                 <tr key={i}>
+                  <td className="border px-2 py-1">{t.idtask}</td>
                   <td className="border px-2 py-1">{t.title}</td>
                   <td className="border px-2 py-1">{t.responsavel}</td>
                   <td className="border px-2 py-1">{t.comentario}</td>
