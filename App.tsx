@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import KPIPage from './components/KPIPage';
 import { API_BASE_URL } from './constants';
 import { fetchUsuariosOnline, UsuarioOnline } from './services/usuariosOnlineService';
 import { BitrixTask, TaskStatus, TaskPriority, User } from './types';
@@ -45,7 +46,7 @@ import VariaveisPage from './VariaveisPage';
 import TaskOpenSmartPage from './components/TaskOpenSmartPage';
 // import { Gestao } from './components/Gestao';
 
-type ActiveTab = 'dashboard' | 'activities' | 'cost-centers' | 'group-links' | 'bitrix-groups' | 'usuarios-online' | 'perfil-usuario' | 'prioritarias' | 'consultas' | 'variaveis' | 'task-open-smart';
+type ActiveTab = 'dashboard' | 'activities' | 'cost-centers' | 'group-links' | 'bitrix-groups' | 'usuarios-online' | 'perfil-usuario' | 'prioritarias' | 'consultas' | 'variaveis' | 'kpi' | 'task-open-smart';
 
 
 const App: React.FC = () => {
@@ -398,6 +399,10 @@ const App: React.FC = () => {
             <Layers size={20} />
             {sidebarOpen && <span className="text-sm font-bold">Variáveis</span>}
           </button>
+          <button onClick={() => setActiveTab('kpi')} className={`flex items-center gap-4 w-full px-4 py-3 rounded-xl transition-all ${activeTab === 'kpi' ? 'bg-emerald-600/10 text-emerald-500' : 'text-slate-500 hover:text-white hover:bg-white/5'}`}>
+            <Layers size={20} />
+            {sidebarOpen && <span className="text-sm font-bold">KPI</span>}
+          </button>
         </nav>
         <div className="p-4 border-t border-white/5">
           <button onClick={logout} className="flex items-center gap-4 w-full px-4 py-3 text-rose-500 hover:bg-rose-500/10 rounded-xl font-bold transition-all">
@@ -448,6 +453,9 @@ const App: React.FC = () => {
         </header>
 
         <main className="flex-1 overflow-y-auto p-8 space-y-8">
+          {activeTab === 'kpi' ? (
+            <KPIPage />
+          ) : (
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-black text-emerald-700 tracking-tighter">Gestão Operacional Bitrix</h1>
@@ -474,6 +482,7 @@ const App: React.FC = () => {
             </div>
           </div>
 
+          )}
           {error && (
             <div className="p-4 bg-rose-50 border border-rose-100 rounded-2xl text-rose-600 text-sm font-bold flex items-center gap-3">
               <AlertCircle size={20} />
