@@ -61,15 +61,15 @@ const KPIPage: React.FC = () => {
       <div className="flex gap-4 mb-4">
         <div className="flex flex-col">
           <label className="text-xs font-semibold mb-1" htmlFor="anoBase">ANO BASE</label>
-          <input id="anoBase" value={anoBase} onChange={e => setAnoBase(e.target.value)} className="border p-2 rounded" placeholder="ANO BASE" />
+          <input id="anoBase" type="number" value={anoBase} onChange={e => setAnoBase(e.target.value.replace(/\D/g, ''))} className="border p-2 rounded" placeholder="ANO BASE" />
         </div>
         <div className="flex flex-col">
           <label className="text-xs font-semibold mb-1" htmlFor="mes">MÊS</label>
-          <input id="mes" value={mes} onChange={e => setMes(e.target.value)} className="border p-2 rounded" placeholder="MÊS" />
+          <input id="mes" type="number" value={mes} onChange={e => setMes(e.target.value.replace(/\D/g, ''))} className="border p-2 rounded" placeholder="MÊS" />
         </div>
         <div className="flex flex-col">
           <label className="text-xs font-semibold mb-1" htmlFor="grupo">GRUPO</label>
-          <input id="grupo" value={grupo} onChange={e => setGrupo(e.target.value)} className="border p-2 rounded" placeholder="GRUPO" />
+          <input id="grupo" type="number" value={grupo} onChange={e => setGrupo(e.target.value.replace(/\D/g, ''))} className="border p-2 rounded" placeholder="GRUPO" />
         </div>
         <div className="flex flex-col">
           <label className="text-xs font-semibold mb-1" htmlFor="codCusto">COD. CUSTO</label>
