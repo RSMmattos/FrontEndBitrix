@@ -29,6 +29,13 @@ interface KpiApiResponse {
   pendentes: TaskData[];
 }
 
+function formatDateBR(dateStr?: string | null) {
+  if (!dateStr) return '';
+  const [y, m, d] = dateStr.slice(0, 10).split('-');
+  if (!y || !m || !d) return dateStr;
+  return `${d}/${m}/${y}`;
+}
+
 const KPIPage: React.FC = () => {
   const [data, setData] = useState<KpiApiResponse | null>(null);
   const [loading, setLoading] = useState(false);
@@ -52,10 +59,22 @@ const KPIPage: React.FC = () => {
     <div className="p-6">
       <h2 className="text-2xl font-bold mb-4">Relatório KPI</h2>
       <div className="flex gap-4 mb-4">
-        <input value={anoBase} onChange={e => setAnoBase(e.target.value)} className="border p-2 rounded" placeholder="Ano Base" />
-        <input value={mes} onChange={e => setMes(e.target.value)} className="border p-2 rounded" placeholder="Mês" />
-        <input value={grupo} onChange={e => setGrupo(e.target.value)} className="border p-2 rounded" placeholder="Grupo" />
-        <input value={codCusto} onChange={e => setCodCusto(e.target.value)} className="border p-2 rounded" placeholder="Cod. Custo" />
+        <div className="flex flex-col">
+          <label className="text-xs font-semibold mb-1" htmlFor="anoBase">ANO BASE</label>
+          <input id="anoBase" value={anoBase} onChange={e => setAnoBase(e.target.value)} className="border p-2 rounded" placeholder="ANO BASE" />
+        </div>
+        <div className="flex flex-col">
+          <label className="text-xs font-semibold mb-1" htmlFor="mes">MÊS</label>
+          <input id="mes" value={mes} onChange={e => setMes(e.target.value)} className="border p-2 rounded" placeholder="MÊS" />
+        </div>
+        <div className="flex flex-col">
+          <label className="text-xs font-semibold mb-1" htmlFor="grupo">GRUPO</label>
+          <input id="grupo" value={grupo} onChange={e => setGrupo(e.target.value)} className="border p-2 rounded" placeholder="GRUPO" />
+        </div>
+        <div className="flex flex-col">
+          <label className="text-xs font-semibold mb-1" htmlFor="codCusto">COD. CUSTO</label>
+          <input id="codCusto" value={codCusto} onChange={e => setCodCusto(e.target.value)} className="border p-2 rounded" placeholder="COD. CUSTO" />
+        </div>
       </div>
       {loading && <div>Carregando...</div>}
       {error && <div className="text-red-500">{error}</div>}
@@ -101,8 +120,8 @@ const KPIPage: React.FC = () => {
                   <td className="border px-2 py-1">{t.title}</td>
                   <td className="border px-2 py-1">{t.responsavel}</td>
                   <td className="border px-2 py-1">{t.comentario}</td>
-                  <td className="border px-2 py-1">{t.dataprazofinal?.slice(0,10)}</td>
-                  <td className="border px-2 py-1">{t.dataconclusao?.slice(0,10)}</td>
+                  <td className="border px-2 py-1">{formatDateBR(t.dataprazofinal)}</td>
+                  <td className="border px-2 py-1">{formatDateBR(t.dataconclusao)}</td>
                 </tr>
               ))}
             </tbody>
@@ -126,7 +145,7 @@ const KPIPage: React.FC = () => {
                   <td className="border px-2 py-1">{t.title}</td>
                   <td className="border px-2 py-1">{t.responsavel}</td>
                   <td className="border px-2 py-1">{t.comentario}</td>
-                  <td className="border px-2 py-1">{t.dataprazofinal?.slice(0,10)}</td>
+                  <td className="border px-2 py-1">{formatDateBR(t.dataprazofinal)}</td>
                   <td className="border px-2 py-1">{t.status || '-'}</td>
                 </tr>
               ))}
