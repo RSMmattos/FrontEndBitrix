@@ -66,10 +66,19 @@ const KPIPage: React.FC = () => {
     const imgData = canvas.toDataURL('image/png');
     const pdf = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
     const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
+    // Título
+    pdf.setFontSize(22);
+    pdf.text('Comprovante de indicador KPI', pageWidth / 2, 40, { align: 'center' });
+    // Data e hora
+    pdf.setFontSize(12);
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('pt-BR');
+    const timeStr = now.toLocaleTimeString('pt-BR');
+    pdf.text(`Gerado em: ${dateStr} ${timeStr}`, pageWidth / 2, 60, { align: 'center' });
+    // Imagem do relatório
     const imgWidth = pageWidth - 40;
     const imgHeight = (canvas.height * imgWidth) / canvas.width;
-    pdf.addImage(imgData, 'PNG', 20, 20, imgWidth, imgHeight);
+    pdf.addImage(imgData, 'PNG', 20, 80, imgWidth, imgHeight);
     pdf.save('relatorio_kpi.pdf');
   };
 
