@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 import axios from 'axios';
 
 interface KpiData {
@@ -55,9 +57,34 @@ const KPIPage: React.FC = () => {
       .finally(() => setLoading(false));
   }, [anoBase, mes, grupo, codCusto]);
 
+  const reportRef = useRef<HTMLDivElement>(null);
+
+  const handleGeneratePDF = async () => {
+    if (!reportRef.current) return;
+    const element = reportRef.current;
+    const canvas = await html2canvas(element);
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const imgWidth = pageWidth - 40;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    pdf.addImage(imgData, 'PNG', 20, 20, imgWidth, imgHeight);
+    pdf.save('relatorio_kpi.pdf');
+  };
+
   return (
     <div className="p-6">
-      <h2 className="text-2xl font-bold mb-4">Relatório KPI</h2>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-2xl font-bold">Relatório KPI</h2>
+        <button
+          onClick={handleGeneratePDF}
+          className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+        >
+          Gerar PDF
+        </button>
+      </div>
+      <div ref={reportRef}>
       <div className="flex gap-4 mb-4">
         <div className="flex flex-col">
           <label className="text-xs font-semibold mb-1" htmlFor="anoBase">ANO BASE</label>
@@ -153,6 +180,7 @@ const KPIPage: React.FC = () => {
           </table>
         </div>
       )}
+      </div>
     </div>
   );
 };
